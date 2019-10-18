@@ -3,12 +3,19 @@ title: "A Short Primer on MIP"
 author: "Roger Li"
 date: "10/17/2019"
 output:
-  beamer_presentation
+  beamer_presentation: 
+    fonttheme: professionalfonts
+    theme: Rochester
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 options(tinytex.verbose = TRUE)
+library(dplyr)
+library(ggplot2)
+library(ompr)
+library(ompr.roi)
+library(ROI.plugin.glpk)
 ```
 
 ## R Markdown
@@ -35,3 +42,6 @@ summary(cars)
 plot(pressure)
 ```
 
+## Traveling Salesman Problem
+```{r TSP}
+```
