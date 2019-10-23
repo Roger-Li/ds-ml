@@ -1,9 +1,10 @@
 ---
 title: "A Short Primer on MIP"
-author: "Roger Li"
-date: "10/17/2019"
+author: "Yuanzhe(Roger) Li"
+date: "10/29/2019"
 output:
   beamer_presentation: 
+    colortheme: seagull
     fonttheme: professionalfonts
     theme: Rochester
 ---
