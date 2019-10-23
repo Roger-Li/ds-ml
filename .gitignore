@@ -1,4 +1,4 @@
 # Do not track files #
 ######################
 *.Rhistory
-#.log
+*.log
