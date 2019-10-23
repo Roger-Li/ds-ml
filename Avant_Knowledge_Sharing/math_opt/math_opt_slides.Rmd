@@ -1,5 +1,5 @@
 ---
-title: "A Short Primer on MIP"
+title: "The Shortest Primer on Mathematical Optimization"
 author: "Yuanzhe(Roger) Li"
 date: "10/29/2019"
 output:
@@ -25,23 +25,27 @@ This is an R Markdown presentation. Markdown is a simple formatting syntax for a
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
 
-## Slide with Bullets
+## Overview
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+- Mathematical Optimization
+- Mixed-Integer Programs
+  - Examples 
 
-## Slide with R Output
+## Overview of Mathematical Optimization
 
-```{r cars, echo = TRUE}
-summary(cars)
-```
 
-## Slide with Plot
+## Mixed-Integer Programs
 
-```{r pressure}
-plot(pressure)
-```
+$$\begin{aligned}
+\max \quad & f(x)\\
+s.t. \quad & g(x) \leq 0 \\
+& x \in \mathbb{R} \times \mathbb{Z}
+\end{aligned}$$
+
+
+
+## Portfolio Optimization
+
 
 ## Traveling Salesman Problem
 ```{r TSP}
