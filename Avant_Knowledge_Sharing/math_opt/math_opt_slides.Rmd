@@ -65,24 +65,7 @@ cities <- data.frame(
   id = 1:n
   ,x = runif(n, max = max_x)
   ,y = runif(n, max = max_y)
-  )
-ggplot(cities, aes(x, y),label = id) + 
-  geom_point() + 
-  geom_text(aes(label=id),color = "blue",hjust=1.5, vjust=0.5) + 
-  geom_segment(
-    aes(
-      x = cities %>% filter(id==5) %>% pull(x)
-      ,y = cities %>% filter(id==5) %>% pull(y)
-      ,xend = cities %>% filter(id==9) %>% pull(x)
-      ,yend = cities %>% filter(id==9) %>% pull(y)
-      )
-    ) +
-  annotate("text", label="d = 99.74", x= 105, y=160, color="red", size=2.5) + 
-  xlab("x coordinate") + 
-  ylab("y coordinate") + 
-  xlim(0,500) + ylim(0,250) + 
-  ggtitle("TSP example with 10 cities") +
-  theme_light()
+)
 
 # Add distances and dist_fun
 distance <- as.matrix(
@@ -94,6 +77,35 @@ dist_fun <- function(i, j) {
   vapply(seq_along(i), function(k) distance[i[k], j[k]], numeric(1L))
 }
 
+# Draw an example route
+route <- c(5,9,10,3,4,1,2,6,8,7,5)
+random_path <- data.frame(
+  trip_id = c(1:10, 1:10)
+  ,origin = route[1:10]
+  ,destination = route[2:11]
+  ) %>%
+  dplyr::mutate(distance = dist_fun(origin, destination)) %>%
+  dplyr::left_join(cities, by = c("origin"="id"))
+
+# Plot the example cities and route
+ggplot(cities, aes(x, y),label = id) + 
+  geom_point() + 
+  geom_text(aes(label=id),color = "blue",hjust=1.5, vjust=0.5) + 
+  geom_segment(
+    aes(
+      x = cities %>% filter(id==5) %>% pull(x)
+      ,y = cities %>% filter(id==5) %>% pull(y)
+      ,xend = cities %>% filter(id==9) %>% pull(x)
+      ,yend = cities %>% filter(id==9) %>% pull(y)
+      )
+    ) +
+  annotate("text", label="d = 99.74", x= 105, y=160, color="red", size=2.5) +
+  geom_line(data = random_path, aes(group=trip_id)) +  
+  xlab("x coordinate") + 
+  ylab("y coordinate") + 
+  xlim(0,500) + ylim(0,250) + 
+  ggtitle("TSP example with 10 cities") +
+  theme_light()
 ```
 
 ## 
