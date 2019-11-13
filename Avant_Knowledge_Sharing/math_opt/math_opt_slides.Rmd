@@ -53,7 +53,7 @@ s.t. \quad & g(x) \leq 0 \\
 
 > The travelling salesman problem (TSP) asks the following question: Given a list of cities and the distances between each pair of cities, what is the shortest possible route that visits each city exactly once and returns to the origin city?
 
-```{r tsp_setup, fig.width=4, fig.height=1.8, fig.align='center'}
+```{r tsp_setup, fig.width=3.5, fig.height=1.8, fig.align='center'}
 # number of cities
 n <- 10
 # boundary of euclidean space
@@ -80,32 +80,41 @@ dist_fun <- function(i, j) {
 # Draw an example route
 route <- c(5,9,10,3,4,1,2,6,8,7,5)
 random_path <- data.frame(
-  trip_id = c(1:10, 1:10)
-  ,origin = route[1:10]
-  ,destination = route[2:11]
+  trip_id = lapply(seq_along(1:10), function(x) rep(x,2)) %>% unlist
+  ,cid = c(
+    route[1]
+    ,lapply(route[2:10], function(x) rep(x,2)) %>% unlist(.)
+    ,route[11]
+    )
   ) %>%
-  dplyr::mutate(distance = dist_fun(origin, destination)) %>%
-  dplyr::left_join(cities, by = c("origin"="id"))
+  dplyr::left_join(cities, by = c("cid"="id"))
+
+total_dist <- random_path %>% 
+  dplyr::group_by(trip_id) %>% 
+  dplyr::summarise(origin = unique(cid)[1], destination=unique(cid)[2]) %>%
+  dplyr::mutate(distance=dist_fun(origin, destination)) %>%
+  dplyr::pull(distance) %>%
+  sum(.)
+  
+
+
 
 # Plot the example cities and route
 ggplot(cities, aes(x, y),label = id) + 
   geom_point() + 
-  geom_text(aes(label=id),color = "blue",hjust=1.5, vjust=0.5) + 
-  geom_segment(
-    aes(
-      x = cities %>% filter(id==5) %>% pull(x)
-      ,y = cities %>% filter(id==5) %>% pull(y)
-      ,xend = cities %>% filter(id==9) %>% pull(x)
-      ,yend = cities %>% filter(id==9) %>% pull(y)
-      )
+  geom_text(aes(label=id),color = "blue",hjust=1.5, vjust=0.5, size =3) + 
+  annotate(
+    "text"
+    ,label=paste0("Random path with total distance = ", round(total_dist,2))
+    ,x= 250, y=225, color = "blue", size=2
     ) +
-  annotate("text", label="d = 99.74", x= 105, y=160, color="red", size=2.5) +
-  geom_line(data = random_path, aes(group=trip_id)) +  
+  geom_line(data = random_path, aes(group=trip_id), linetype="dashed", color="grey") +  
   xlab("x coordinate") + 
   ylab("y coordinate") + 
   xlim(0,500) + ylim(0,250) + 
   ggtitle("TSP example with 10 cities") +
-  theme_light()
+  theme_light() +
+  theme(plot.title = element_text(size = 10, face = "bold"))
 ```
 
 ## 
