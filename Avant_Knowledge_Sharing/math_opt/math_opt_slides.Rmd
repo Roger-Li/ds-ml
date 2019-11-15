@@ -20,22 +20,17 @@ library(ompr.roi)
 library(ROI.plugin.glpk)
 ```
 
-## R Markdown
-
-This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
-
 ## Overview
 
-- Mathematical Optimization
-- Mixed-Integer Programs
-  - Examples 
+- Mathematical optimization
+- Mixed-integer programming
+  - Traveling salesman problem
+  - Portfolio optimization
 
-## Overview of Mathematical Optimization
+## Overview of mathematical optimization
 
 
-## Mixed-Integer Programs
+## Mixed-Integer Programming (MIP)
 
 $$\begin{aligned}
 \max \quad & f(x)\\
@@ -48,7 +43,7 @@ s.t. \quad & g(x) \leq 0 \\
 ## Portfolio Optimization
 
 
-## Traveling Salesman Problem
+## Traveling salesman problem (TSP)
 - [TSP wikipedia page](https://en.wikipedia.org/wiki/Travelling_salesman_problem)
 
 > The travelling salesman problem (TSP) asks the following question: Given a list of cities and the distances between each pair of cities, what is the shortest possible route that visits each city exactly once and returns to the origin city?
@@ -79,25 +74,15 @@ dist_fun <- function(i, j) {
 
 # Draw an example route
 route <- c(5,9,10,3,4,1,2,6,8,7,5)
-random_path <- data.frame(
-  trip_id = lapply(seq_along(1:10), function(x) rep(x,2)) %>% unlist
-  ,cid = c(
-    route[1]
-    ,lapply(route[2:10], function(x) rep(x,2)) %>% unlist(.)
-    ,route[11]
-    )
-  ) %>%
-  dplyr::left_join(cities, by = c("cid"="id"))
+random_path <- data.frame(cid = route) %>%
+  dplyr::left_join(cities, by = c("cid"="id")) %>%
+  dplyr::mutate(
+    origin=cid
+    ,destination=lead(origin)
+    ,dist = dist_fun(origin, destination)
+  )
 
-total_dist <- random_path %>% 
-  dplyr::group_by(trip_id) %>% 
-  dplyr::summarise(origin = unique(cid)[1], destination=unique(cid)[2]) %>%
-  dplyr::mutate(distance=dist_fun(origin, destination)) %>%
-  dplyr::pull(distance) %>%
-  sum(.)
-  
-
-
+total_dist <- sum(random_path$dist, na.rm=TRUE)
 
 # Plot the example cities and route
 ggplot(cities, aes(x, y),label = id) + 
@@ -108,7 +93,7 @@ ggplot(cities, aes(x, y),label = id) +
     ,label=paste0("Random path with total distance = ", round(total_dist,2))
     ,x= 250, y=225, color = "blue", size=2
     ) +
-  geom_line(data = random_path, aes(group=trip_id), linetype="dashed", color="grey") +  
+  geom_path(data = random_path)+ 
   xlab("x coordinate") + 
   ylab("y coordinate") + 
   xlim(0,500) + ylim(0,250) + 
@@ -117,5 +102,4 @@ ggplot(cities, aes(x, y),label = id) +
   theme(plot.title = element_text(size = 10, face = "bold"))
 ```
 
-## 
-Add distance to the figure
+## Formulate TSP as a MIP
