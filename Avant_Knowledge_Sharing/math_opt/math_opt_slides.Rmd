@@ -44,11 +44,15 @@ s.t. \quad & g(x) \leq 0 \\
 
 
 ## Traveling salesman problem (TSP)
-- [TSP wikipedia page](https://en.wikipedia.org/wiki/Travelling_salesman_problem)
 
-> The travelling salesman problem (TSP) asks the following question: Given a list of cities and the distances between each pair of cities, what is the shortest possible route that visits each city exactly once and returns to the origin city?
+- Problem definition (from [wikipedia](https://en.wikipedia.org/wiki/Travelling_salesman_problem))
 
-```{r tsp_setup, fig.width=3.5, fig.height=1.8, fig.align='center'}
+
+*The travelling salesman problem (TSP) asks the following question: Given a list of cities and the distances between each pair of cities, what is the shortest possible route that visits each city exactly once and returns to the origin city?*
+
+
+## Example of a random tour
+```{r tsp_setup, fig.width=3.5, fig.height=2.2, fig.align='center'}
 # number of cities
 n <- 10
 # boundary of euclidean space
@@ -73,16 +77,16 @@ dist_fun <- function(i, j) {
 }
 
 # Draw an example route
-route <- c(5,9,10,3,4,1,2,6,8,7,5)
+route <- c(5,1,9,3,10,4,6,2,8,7,5)
 random_path <- data.frame(cid = route) %>%
   dplyr::left_join(cities, by = c("cid"="id")) %>%
   dplyr::mutate(
     origin=cid
     ,destination=lead(origin)
-    ,dist = dist_fun(origin, destination)
+    ,Distance = dist_fun(origin, destination)
   )
 
-total_dist <- sum(random_path$dist, na.rm=TRUE)
+total_dist <- sum(random_path$Distance, na.rm=TRUE)
 
 # Plot the example cities and route
 ggplot(cities, aes(x, y),label = id) + 
@@ -93,13 +97,14 @@ ggplot(cities, aes(x, y),label = id) +
     ,label=paste0("Random path with total distance = ", round(total_dist,2))
     ,x= 250, y=225, color = "blue", size=2
     ) +
-  geom_path(data = random_path)+ 
+  geom_path(data = random_path, aes(color = Distance))+ 
   xlab("x coordinate") + 
   ylab("y coordinate") + 
   xlim(0,500) + ylim(0,250) + 
   ggtitle("TSP example with 10 cities") +
   theme_light() +
-  theme(plot.title = element_text(size = 10, face = "bold"))
+  theme( plot.title = element_text(size = 10, face = "bold"))
 ```
+- Brute-force approach takes $O(n!)$, that is $3,628,800$ for $n=10$
 
 ## Formulate TSP as a MIP
