@@ -1,7 +1,7 @@
 ---
 title: "Introduction to Mathematical Optimization and Mixed-Integer Programming"
 author: "Yuanzhe(Roger) Li"
-date: "11/12/2019"
+date: "12/02/2019"
 output:
   beamer_presentation: 
     colortheme: seagull
@@ -18,14 +18,20 @@ library(ggplot2)
 library(ompr)
 library(ompr.roi)
 library(ROI.plugin.glpk)
+library(knitr)
+library(tidyr)
+library(ggrepel)
+library(magrittr)
 ```
 
 ## Overview
 
 - Mathematical optimization
-- Mixed-integer programming
+- Mixed-integer programming (MIP)
+- MIP examples
   - Traveling salesman problem
-  - Portfolio optimization
+  - Job scheduling
+  - Resource allocation
 
 ## Overview of mathematical optimization
 
@@ -40,10 +46,7 @@ s.t. \quad & g(x) \leq 0 \\
 
 
 
-## Portfolio Optimization
-
-
-## Traveling salesman problem (TSP)
+## Example 1 - traveling salesman problem (TSP)
 
 - Problem definition (from [wikipedia](https://en.wikipedia.org/wiki/Travelling_salesman_problem))
 
@@ -51,21 +54,19 @@ s.t. \quad & g(x) \leq 0 \\
 *The travelling salesman problem (TSP) asks the following question: Given a list of cities and the distances between each pair of cities, what is the shortest possible route that visits each city exactly once and returns to the origin city?*
 
 
-## Example of a random tour
-```{r tsp_setup, fig.width=3.5, fig.height=2.2, fig.align='center'}
+## Example of a random path
+```{r tsp_setup, fig.width=3.8, fig.height=2.2, fig.align='center'}
 # number of cities
 n <- 10
 # boundary of euclidean space
 max_x <- 500
 max_y <- 250
 set.seed(9102)
-
 cities <- data.frame(
   id = 1:n
   ,x = runif(n, max = max_x)
   ,y = runif(n, max = max_y)
 )
-
 # Add distances and dist_fun
 distance <- as.matrix(
   stats::dist(select(cities, x, y)
@@ -75,7 +76,6 @@ distance <- as.matrix(
 dist_fun <- function(i, j) {
   vapply(seq_along(i), function(k) distance[i[k], j[k]], numeric(1L))
 }
-
 # Draw an example route
 route <- c(5,1,9,3,10,4,6,2,8,7,5)
 random_path <- data.frame(cid = route) %>%
@@ -85,9 +85,7 @@ random_path <- data.frame(cid = route) %>%
     ,destination=lead(origin)
     ,Distance = dist_fun(origin, destination)
   )
-
 total_dist <- sum(random_path$Distance, na.rm=TRUE)
-
 # Plot the example cities and route
 ggplot(cities, aes(x, y),label = id) + 
   geom_point() + 
@@ -95,7 +93,7 @@ ggplot(cities, aes(x, y),label = id) +
   annotate(
     "text"
     ,label=paste0("Random path with total distance = ", round(total_dist,2))
-    ,x= 250, y=225, color = "blue", size=2
+    ,x= 250, y=225, color = "blue", size=2.5
     ) +
   geom_path(data = random_path, aes(color = Distance))+ 
   xlab("x coordinate") + 
@@ -105,6 +103,233 @@ ggplot(cities, aes(x, y),label = id) +
   theme_light() +
   theme( plot.title = element_text(size = 10, face = "bold"))
 ```
-- Brute-force approach takes $O(n!)$, that is $3,628,800$ for $n=10$
+- Finding the optimal path by brute force takes $O(n!)$
 
 ## Formulate TSP as a MIP
+
+\begin{block}{Miller-Tucker-Zemlin formulation}
+  \begin{itemize}
+    \item Label the cities with $1,...,n$ and define:
+      $$
+        x_{ij}= 
+        \begin{cases}
+            1& \text{if a path goes from city $i$ to city $j$}\\
+            0              & \text{otherwise}
+        \end{cases}
+      $$
+    \item Use another variable $u_i$ to denote the ordering of the cities.
+  \end{itemize}
+\end{block}
+
+
+## Formulate TSP as a MIP (continued)
+  $$\begin{aligned}
+  \max \quad & \sum_{i=1}^{n} \sum_{j\neq i, j=1}^{n}d_{ij}x_{ij}\\
+  s.t. \quad & x_{ij} \in \{0, 1\}               & i,j = 1,..., n\\
+             & u_i \in \mathbf{Z}                & i = 2,..., n \\
+             & \sum_{i=1, i\neq j}^{n}x_{ij} = 1 & j = 1,...,n \\
+             & \sum_{j=1, j\neq i}^{n}x_{ij} = 1 & i = 1,...,n \\
+             & u_i-u_j + nx_{ij} \leq n-1        & 2 \leq i\neq j \leq n\\ 
+             & 0 \leq u_i \leq n-1               & 2 \leq i \leq n
+  \end{aligned}$$
+
+## MIP solution to TSP
+```{r tsp_mip, include=FALSE}
+tsp_model <- ompr::MIPModel() %>%
+  # we create a variable that is 1 iff we travel from city i to j
+  add_variable(x[i, j], i = 1:n, j = 1:n, 
+               type = "integer", lb = 0, ub = 1) %>%
+  
+  # a helper variable for the MTZ formulation of the tsp
+  add_variable(u[i], i = 1:n, lb = 1, ub = n) %>% 
+  
+  # minimize travel distance
+  set_objective(sum_expr(dist_fun(i, j) * x[i, j], i = 1:n, j = 1:n), "min") %>%
+  
+  # you cannot go to the same city
+  set_bounds(x[i, i], ub = 0, i = 1:n) %>%
+  
+  # leave each city
+  add_constraint(sum_expr(x[i, j], j = 1:n) == 1, i = 1:n) %>%
+  #
+  # visit each city
+  add_constraint(sum_expr(x[i, j], i = 1:n) == 1, j = 1:n) %>%
+  
+  # ensure no subtours (arc constraints)
+  add_constraint(u[i] >= 2, i = 2:n) %>% 
+  add_constraint(u[i] - u[j] + 1 <= (n - 1) * (1 - x[i, j]), i = 2:n, j = 2:n)
+tsp_result <- solve_model(tsp_model, with_ROI(solver = "glpk", verbose = TRUE))
+```
+- We use the [GLPK](https://www.gnu.org/software/glpk/) solver to optimize the MIP formulated above.
+
+```{r tsp_result}
+tsp_sol <- ompr::get_solution(tsp_result, x[i, j]) %>% 
+  dplyr::filter(value > 0)
+opt_route <- c(1, 5, 9, 10, 3, 4 ,2, 8, 6, 7, 1)
+opt_path <- data.frame(cid = opt_route) %>%
+  dplyr::left_join(cities, by = c("cid"="id")) %>%
+  dplyr::mutate(
+    origin=cid
+    ,destination=lead(origin)
+    ,Distance = dist_fun(origin, destination)
+  )
+opt_dist <- sum(opt_path$Distance, na.rm=TRUE)
+opt_path %>% 
+  mutate(trip_id = 1:nrow(.)) %>%
+  select(trip_id, origin, destination, Distance) %>%
+  head(10) %>% 
+  kable(digits=3, col.names = c("trip_id", "from ($i$)", "to ($j$)", "distance"))
+```
+
+## Visualize the optimal path to the TSP
+```{r tsp_visual, fig.width=3.8, fig.height=2.8, fig.align='center'}
+ggplot(cities, aes(x, y),label = id) + 
+  geom_point() + 
+  geom_text(aes(label=id),color = "blue",hjust=1.5, vjust=0.5, size =3) + 
+  annotate(
+    "text"
+    ,label=paste0("Optimal path with total distance = ", round(opt_dist,2))
+    ,x= 250, y=225, color = "blue", size=2.5
+    ) +
+  geom_path(data = opt_path)+ 
+  xlab("x coordinate") + 
+  ylab("y coordinate") + 
+  xlim(0,500) + ylim(0,250) + 
+  ggtitle("Optimal path to the TSP") +
+  theme_light() +
+  theme( plot.title = element_text(size = 10, face = "bold"))
+```
+
+
+
+## Example 2 - facility location problem (FLP)
+- [Wikipedia definition](https://en.wikipedia.org/wiki/Facility_location_problem): *A branch of operations research concerned with the optimal placement of facilities to minimize transportation cost while considering other factors.*
+
+- We consider a simple warehouse allocation problem, where facilities can be built in $m$ potential locations to serve $n$ customers. The goal is to minimize the total transportation cost and fixed facility cost.
+
+
+## Visualization of a FLP
+```{r flp_setup, fig.width=4, fig.height=2.2, fig.align='center'}
+set.seed(1234)
+# customers
+grid_size <- 1000
+n <- 100
+customer_locations <- data.frame(
+  id = 1:n,
+  x = round(runif(n) * grid_size),
+  y = round(runif(n) * grid_size)
+)
+
+# potential locations and fixed cost
+m <- 20
+warehouse_locations <- data.frame(
+  id = 1:m,
+  x = round(runif(m) * grid_size),
+  y = round(runif(m) * grid_size)
+)
+fixedcost <- round(rnorm(m, mean = grid_size * 10, sd = grid_size * 5))
+
+
+# transportation cost
+transportcost <- function(i, j) {
+  customer <- customer_locations[i, ]
+  warehouse <- warehouse_locations[j, ]
+  round(sqrt((customer$x - warehouse$x)^2 + (customer$y - warehouse$y)^2))
+}
+
+p <- ggplot(customer_locations, aes(x, y)) + 
+  geom_point(alpha = 0.7, size=1) + 
+  geom_point(data = warehouse_locations, color = "red", alpha = 0.5, shape = 15) +
+  scale_x_continuous(limits = c(0, grid_size)) +
+  scale_y_continuous(limits = c(0, grid_size)) +
+  ggtitle("Warehouse location problem (n=100, m=20)") + 
+  theme_light() +
+  theme(axis.title = element_blank(), 
+        axis.ticks = element_blank(), 
+        axis.text = element_blank(), panel.grid = element_blank(),
+        plot.title = element_text(size = 10, face = "bold"))
+plot(p)
+```
+Black dots represent customers. Red triangles show potential locations to build warehouses.
+
+## Formulate FLP as MIP
+\begin{block}{Warehouse allocation problem}
+  \begin{itemize}
+    \item Let $I=\{1,...,n\}$ be the set of customers, $J=\{1,...,m\}$ the set of potential locations.
+    \item Define two set of binary variables:
+       $$ y_{j}= 
+        \begin{cases}
+            1& \text{a warehouse is built at location $j$}\\
+            0              & \text{otherwise}
+        \end{cases}$$
+        and 
+      $$ x_{ij}= 
+        \begin{cases}
+            1 & \text{if customer $i$ will be served by warehouse at $j$}\\
+            0              & \text{otherwise}
+        \end{cases}$$
+  \end{itemize}
+\end{block}
+
+
+## Formulate FLP as a MIP
+
+
+$$\begin{aligned}
+  \max \quad & \sum_{i=1}^{n} \sum_{j}^{m}\text{transportation\_cost}_{ij}\cdot x_{ij}+ \sum_{j=1}^{m}\text{fixed\_cost}_{j}\cdot y_{j} \\
+  s.t. \quad & \sum_{j}^{m} x_{ij} = 1,  \quad\forall i = 1,..., n \\
+             & x_{ij} \leq y_j,  \qquad\forall          i = 1,...,n \quad j = 1,..., m \\
+             & x_{ij} \in \{0, 1\},\quad\forall      i = 1,...,n \quad j = 1,..., m \\
+             & y_j \in \{0, 1\},  \quad\forall         j = 1,..., m 
+  \end{aligned}$$
+
+
+
+## MIP solution to the FLP
+```{r flp_model, include=FALSE}
+# Construct model
+model <- MIPModel() %>%
+  # 1 iff i gets assigned to warehouse j
+  add_variable(x[i, j], i = 1:n, j = 1:m, type = "binary") %>%
+  
+  # 1 iff warehouse j is built
+  add_variable(y[j], j = 1:m, type = "binary") %>%
+  
+  # maximize the preferences
+  set_objective(sum_expr(transportcost(i, j) * x[i, j], i = 1:n, j = 1:m) + 
+                  sum_expr(fixedcost[j] * y[j], j = 1:m), "min") %>%
+  
+  # every customer needs to be assigned to a warehouse
+  add_constraint(sum_expr(x[i, j], j = 1:m) == 1, i = 1:n) %>% 
+  
+  # if a customer is assigned to a warehouse, then this warehouse must be built
+  add_constraint(x[i,j] <= y[j], i = 1:n, j = 1:m)
+
+# Solve the model
+result <- solve_model(model, with_ROI(solver = "glpk", verbose = TRUE))
+```
+
+
+```{r flp_solution, fig.width=4, fig.height=2.8, fig.align='center'}
+suppressPackageStartupMessages(library(dplyr))
+matching <- result %>% 
+  get_solution(x[i,j]) %>%
+  filter(value > .9) %>%  
+  select(i, j)
+
+plot_assignment <- matching %>% 
+  inner_join(customer_locations, by = c("i" = "id")) %>% 
+  inner_join(warehouse_locations, by = c("j" = "id"))
+customer_count <- matching %>% group_by(j) %>% summarise(n = n()) %>% rename(id = j)
+plot_warehouses <- warehouse_locations %>% 
+  mutate(costs = fixedcost) %>% 
+  inner_join(customer_count, by = "id") %>% 
+  filter(id %in% unique(matching$j))
+p + 
+  geom_segment(data = plot_assignment, aes(x = x.y, y = y.y, xend = x.x, yend = y.x), alpha = 0.8, color="blue") + 
+  geom_point(data  = plot_warehouses, color = "red", size = 3, shape = 15) +
+  ggrepel::geom_label_repel(data  = plot_warehouses, 
+                            aes(label = paste0("fixed costs:", costs, " - # of customers: ", n)), 
+                            size = 2, nudge_y = 20) + 
+  ggtitle("Optimal warehouse locations and customer assignment")
+```
