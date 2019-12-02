@@ -1,7 +1,7 @@
 ---
-title: "Introduction to Mathematical Optimization and Mixed-Integer Programming"
+title: "Mathematical Optimization for Decision Making"
 author: "Yuanzhe(Roger) Li"
-date: "12/02/2019"
+date: "12/03/2019"
 output:
   beamer_presentation: 
     colortheme: seagull
@@ -26,14 +26,14 @@ library(magrittr)
 
 ## Overview
 
-- Mathematical optimization
+- Basics of Linear Optimization
 - Mixed-integer programming (MIP)
 - MIP examples
   - Traveling salesman problem
   - Job scheduling
   - Resource allocation
 
-## Overview of mathematical optimization
+## Basics of Linear Programming (LP)
 
 
 ## Mixed-Integer Programming (MIP)
@@ -44,7 +44,7 @@ s.t. \quad & g(x) \leq 0 \\
 & x \in \mathbb{R} \times \mathbb{Z}
 \end{aligned}$$
 
-
+## Decisions
 
 ## Example 1 - traveling salesman problem (TSP)
 
