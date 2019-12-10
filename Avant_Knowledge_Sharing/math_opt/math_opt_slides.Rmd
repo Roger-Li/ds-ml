@@ -47,7 +47,7 @@ library(magrittr)
   - a set of ***variables*** that describe the state of the modeled system,
   - a set of ***constraints*** that define the region in which the states are allowed,
   - an ***objective function*** that provides an assessment of the system for any given states, and
-  - input data that serve as input ***parameters***.
+  - external data that serve as input ***parameters***.
   
 
 ## Formulating a Mathematical Programming Problem
@@ -63,17 +63,17 @@ $$\begin{aligned}
 
 ## Nomenclature for Mathematical Programming
 - A ***solution*** is an assignment of values of variables
-- A ***feasible region*** is the set of all possible solutions that satisfy all the constraints. 
+- A ***feasible region*** is the set of all possible solutions that satisfy all the constraints. $\mathcal{F}=\{\mathbf{x}\in \mathbf{S} | g_i(\mathbf{x}) \leq 0, i=1,...,m\}$
 - The ***objective value*** of a solution is obtained by evaluating $f(\cdot)$ at the given solution.
-- An ***optimal solution*** (for a minimization problem) is one whose corresponding objective function value is less than or equal to that of all other feasible solutions.
+- An ***optimal solution*** (for a minimization problem) is one whose corresponding objective value is less than or equal to that of all other feasible solutions.
 
 ## Categorizing Mathematical Programming Problems
 
 - The type of a mathematical programming problem depends on the forms of the objective ($f$) and the constraints ($g_i$'s), as well as the set $S$.
 
-  - *Unconstrained* ($m=0$ and $S =\mathbb{R}^n$) vs. *Constrained*
-  - *Linear* ($f$ and $g_i$'s are linear and $S = \mathbb{R}^n$) vs. *Nonlinear*
-  - *Convex* ($f$ is a convex function and the feasible region $\mathcal{F}=\{\mathbf{x}\in \mathbb{R}^n | g_i(\mathbf{x}) \leq 0, i=1,...,m\}$ is a convex set)  vs. *Nonconvex*
+  - *Unconstrained* ($m=0$ and $\mathbf{S} =\mathbb{R}^n$) vs. *Constrained*
+  - *Linear* ($f$ and $g_i$'s are linear and $\mathbf{S} = \mathbb{R}^n$) vs. *Nonlinear*
+  - *Convex* ($f$ is a convex function and the feasible region $\mathcal{F}$ is a convex set)  vs. *Nonconvex*
   - *Continuous* (e.g., $\mathbf{x} \in \mathbb{R}^n$) vs. *Discrete* (e.g., $\mathbf{x} \in \mathbb{Z}^n$)
   
 - Knowing the type of the problem helps us understand how difficult it will be to solve it, and choose a suitable mathematical programming solver.
@@ -85,7 +85,7 @@ $$\begin{aligned}
 $$\begin{aligned}
 \max \quad & f(\mathbf{x})\\
 \text{s.t.} \quad & g_i(\mathbf{x}) \leq 0, i = 1,...,m \\
-& \mathbf{x} \in \times \mathbb{Z}^{p} \times  \mathbb{R}^{n-p}
+& \mathbf{x} \in \mathbb{Z}^{p} \times  \mathbb{R}^{n-p}
 \end{aligned}$$
 - Why do we need integer variables?
   - model indivisible physical entities (e.g., shares of stocks)
@@ -169,7 +169,7 @@ ggplot(cities, aes(x, y),label = id) +
 
 ## Formulate TSP as a MIP (continued)
   $$\begin{aligned}
-  \max \quad & \sum_{i=1}^{n} \sum_{j\neq i, j=1}^{n}d_{ij}x_{ij}\\
+  \min \quad & \sum_{i=1}^{n} \sum_{j\neq i, j=1}^{n}d_{ij}x_{ij}\\
   s.t. \quad & x_{ij} \in \{0, 1\}               & i,j = 1,..., n\\
              & u_i \in \mathbf{Z}                & i = 2,..., n \\
              & \sum_{i=1, i\neq j}^{n}x_{ij} = 1 & j = 1,...,n \\
@@ -226,7 +226,7 @@ opt_path %>%
   kable(digits=3, col.names = c("trip_id", "from ($i$)", "to ($j$)", "distance"))
 ```
 
-## Visualize the optimal path to the TSP
+## Visualize the optimal path of the TSP
 ```{r tsp_visual, fig.width=3.8, fig.height=2.8, fig.align='center'}
 ggplot(cities, aes(x, y),label = id) + 
   geom_point() + 
@@ -295,7 +295,7 @@ p <- ggplot(customer_locations, aes(x, y)) +
         plot.title = element_text(size = 10, face = "bold"))
 plot(p)
 ```
-Black dots represent customers. Red triangles show potential locations to build warehouses.
+Black dots represent customers. Red squares show potential locations to build warehouses.
 
 ## Formulate FLP as MIP
 \begin{block}{Warehouse allocation problem}
@@ -321,7 +321,7 @@ Black dots represent customers. Red triangles show potential locations to build 
 
 
 $$\begin{aligned}
-  \max \quad & \sum_{i=1}^{n} \sum_{j}^{m}\text{transportation\_cost}_{ij}\cdot x_{ij}+ \sum_{j=1}^{m}\text{fixed\_cost}_{j}\cdot y_{j} \\
+  \max \quad & \sum_{i=1}^{n} \sum_{j=1}^{m}\text{transportation\_cost}_{ij}\cdot x_{ij}+ \sum_{j=1}^{m}\text{fixed\_cost}_{j}\cdot y_{j} \\
   s.t. \quad & \sum_{j}^{m} x_{ij} = 1,  \quad\forall i = 1,..., n \\
              & x_{ij} \leq y_j,  \qquad\forall          i = 1,...,n \quad j = 1,..., m \\
              & x_{ij} \in \{0, 1\},\quad\forall      i = 1,...,n \quad j = 1,..., m \\
@@ -384,7 +384,7 @@ p +
 - Use machine learning and mathematical optimization in conjunction.
   - E.g., use machine learning model predictions as input parameters to formulate the final decision making problem as a mathematical program.
   
-- Use mathematial optimization to directly solve machine learning models.
+- Use mathematical optimization to directly solve machine learning models.
 
 
 ## References
