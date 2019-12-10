@@ -83,7 +83,7 @@ $$\begin{aligned}
 ## Mixed-Integer Programming (MIP) Models
 - The general form of a MIP is
 $$\begin{aligned}
-\max \quad & f(\mathbf{x})\\
+\max \text{ or } \min \quad & f(\mathbf{x})\\
 \text{s.t.} \quad & g_i(\mathbf{x}) \leq 0, i = 1,...,m \\
 & \mathbf{x} \in \mathbb{Z}^{p} \times  \mathbb{R}^{n-p}
 \end{aligned}$$
@@ -170,7 +170,7 @@ ggplot(cities, aes(x, y),label = id) +
 ## Formulate TSP as a MIP (continued)
   $$\begin{aligned}
   \min \quad & \sum_{i=1}^{n} \sum_{j\neq i, j=1}^{n}d_{ij}x_{ij}\\
-  s.t. \quad & x_{ij} \in \{0, 1\}               & i,j = 1,..., n\\
+  \text{s.t.} \quad & x_{ij} \in \{0, 1\}               & i,j = 1,..., n\\
              & u_i \in \mathbf{Z}                & i = 2,..., n \\
              & \sum_{i=1, i\neq j}^{n}x_{ij} = 1 & j = 1,...,n \\
              & \sum_{j=1, j\neq i}^{n}x_{ij} = 1 & i = 1,...,n \\
@@ -321,8 +321,8 @@ Black dots represent customers. Red squares show potential locations to build wa
 
 
 $$\begin{aligned}
-  \max \quad & \sum_{i=1}^{n} \sum_{j=1}^{m}\text{transportation\_cost}_{ij}\cdot x_{ij}+ \sum_{j=1}^{m}\text{fixed\_cost}_{j}\cdot y_{j} \\
-  s.t. \quad & \sum_{j}^{m} x_{ij} = 1,  \quad\forall i = 1,..., n \\
+  \min \quad & \sum_{i=1}^{n} \sum_{j=1}^{m}\text{transportation\_cost}_{ij}\cdot x_{ij}+ \sum_{j=1}^{m}\text{fixed\_cost}_{j}\cdot y_{j} \\
+  \text{s.t.} \quad & \sum_{j}^{m} x_{ij} = 1,  \quad\forall i = 1,..., n \\
              & x_{ij} \leq y_j,  \qquad\forall          i = 1,...,n \quad j = 1,..., m \\
              & x_{ij} \in \{0, 1\},\quad\forall      i = 1,...,n \quad j = 1,..., m \\
              & y_j \in \{0, 1\},  \quad\forall         j = 1,..., m 
