@@ -1,7 +1,9 @@
 ---
 title: "Mathematical Optimization for Decision Making"
 author: "Yuanzhe(Roger) Li"
-date: "12/03/2019"
+date: "12/10/2019"
+header-includes:
+  - \usepackage{mathtools, amsmath}
 output:
   beamer_presentation: 
     colortheme: seagull
@@ -24,27 +26,70 @@ library(ggrepel)
 library(magrittr)
 ```
 
-## Overview
 
-- Basics of Linear Optimization
-- Mixed-integer programming (MIP)
-- MIP examples
+## Outline
+
+- Overview of Mathematical Programming
+
+- Mixed-Integer Programming (MIP) Models
+
+- Examples of MIP Applications
   - Traveling salesman problem
-  - Job scheduling
-  - Resource allocation
+  - Warehouse allocation problem
+  
+- The Role of Mathematical Optimization in Data Science
 
-## Basics of Linear Programming (LP)
+## Mathematical Programming
 
+- *[Mathematical programming](https://en.wikipedia.org/wiki/Mathematical_optimization)* is the selection of a best element (with regard to some criterion) from some set of available alternatives. 
 
-## Mixed-Integer Programming (MIP)
+- A mathematical programming problem consists of
+  - a set of ***variables*** that describe the state of the modeled system,
+  - a set of ***constraints*** that define the region in which the states are allowed,
+  - an ***objective function*** that provides an assessment of the system for any given states, and
+  - input data that serve as input ***parameters***.
+  
 
+## Formulating a Mathematical Programming Problem
+- The general form of a mathematical programming model with $n$ variables and $m$ constraints is 
 $$\begin{aligned}
-\max \quad & f(x)\\
-s.t. \quad & g(x) \leq 0 \\
-& x \in \mathbb{R} \times \mathbb{Z}
+\max \text{ or } \min \quad & f(x_1, ..., x_n)\\
+\text{s.t.} \quad & g_i(x_1,..., x_n) \leq 0, \quad  i = 1,..., m \\
+& (x_1,..., x_n) \in \mathbf{S}
 \end{aligned}$$
 
-## Decisions
+- The inequality constraints can cover $\leq$ and $\geq$, as well as equailty cases.
+- $\mathbf{S}$ may be either continuous (e.g., $\mathbb{R}^n$) or discrete (e.g., $\mathbb{Z}^n$).
+
+## Nomenclature for Mathematical Programming
+- A ***solution*** is an assignment of values of variables
+- A ***feasible region*** is the set of all possible solutions that satisfy all the constraints. 
+- The ***objective value*** of a solution is obtained by evaluating $f(\cdot)$ at the given solution.
+- An ***optimal solution*** (for a minimization problem) is one whose corresponding objective function value is less than or equal to that of all other feasible solutions.
+
+## Categorizing Mathematical Programming Problems
+
+- The type of a mathematical programming problem depends on the forms of the objective ($f$) and the constraints ($g_i$'s), as well as the set $S$.
+
+  - *Unconstrained* ($m=0$ and $S =\mathbb{R}^n$) vs. *Constrained*
+  - *Linear* ($f$ and $g_i$'s are linear and $S = \mathbb{R}^n$) vs. *Nonlinear*
+  - *Convex* ($f$ is a convex function and the feasible region $\mathcal{F}=\{\mathbf{x}\in \mathbb{R}^n | g_i(\mathbf{x}) \leq 0, i=1,...,m\}$ is a convex set)  vs. *Nonconvex*
+  - *Continuous* (e.g., $\mathbf{x} \in \mathbb{R}^n$) vs. *Discrete* (e.g., $\mathbf{x} \in \mathbb{Z}^n$)
+  
+- Knowing the type of the problem helps us understand how difficult it will be to solve it, and choose a suitable mathematical programming solver.
+  
+
+
+## Mixed-Integer Programming (MIP) Models
+- The general form of a MIP is
+$$\begin{aligned}
+\max \quad & f(\mathbf{x})\\
+\text{s.t.} \quad & g_i(\mathbf{x}) \leq 0, i = 1,...,m \\
+& \mathbf{x} \in \times \mathbb{Z}^{p} \times  \mathbb{R}^{n-p}
+\end{aligned}$$
+- Why do we need integer variables?
+  - model indivisible physical entities (e.g., shares of stocks)
+  - *binary (0-1) variables* can be used to model logical conditions or combinatorial structures.
 
 ## Example 1 - traveling salesman problem (TSP)
 
@@ -329,7 +374,23 @@ p +
   geom_segment(data = plot_assignment, aes(x = x.y, y = y.y, xend = x.x, yend = y.x), alpha = 0.8, color="blue") + 
   geom_point(data  = plot_warehouses, color = "red", size = 3, shape = 15) +
   ggrepel::geom_label_repel(data  = plot_warehouses, 
-                            aes(label = paste0("fixed costs:", costs, " - # of customers: ", n)), 
+                            aes(label = paste0("fixed costs:", costs, ", # of customers: ", n)), 
                             size = 2, nudge_y = 20) + 
   ggtitle("Optimal warehouse locations and customer assignment")
 ```
+
+
+## Mathematical Optimization  and Machine Learning
+- Use machine learning and mathematical optimization in conjunction.
+  - E.g., use machine learning model predictions as input parameters to formulate the final decision making problem as a mathematical program.
+  
+- Use mathematial optimization to directly solve machine learning models.
+
+
+## References
+- Ted Ralphs 2015. *[ISE 347/447: Financial Optimization (Fall 2015)](https://coral.ie.lehigh.edu/~ted/teaching/ie447/)*, lecture notes, Lehigh University.
+
+- Dirk Schumacher 2018. *ompr: Model and Solve Mixed Integer Linear Programs*,  R package
+  version 0.8.0.
+
+ - To get serious about mathematical optimization, checkout Boyd and Vandenberghe (2004)
