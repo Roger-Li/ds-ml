@@ -1,4 +1,5 @@
 Table of Contents
+
 - [Reading Notes on Regularization and Bayesian Modeling](#reading-notes-on-regularization-and-bayesian-modeling)
   - [1. Regularized (Linear) Regression](#1-regularized-linear-regression)
   - [2. Scikit-learn: Liner Models](#2-scikit-learn-liner-models)
@@ -135,10 +136,12 @@ $$H_\epsilon(z) = \begin{cases}
 
 # 3. References
 Two major documents that have been through
+
 - [UC Business Analytics R Programming Guide - Regularized Regression](http://uc-r.github.io/regularized_regression)
 - [Scikit-learn documentation - 1.1 Linear Models](https://scikit-learn.org/stable/modules/linear_model.html).
 
 Notes and further readings on a variety of sub-topics.
+
 - Automatic Relevance Determination
   - Christopher M. Bishop: Pattern Recognition and Machine Learning, Chapter 7.2.1
    - [David Wipf and Srikantan Nagarajan: A new view of automatic relevance determination](https://papers.nips.cc/paper/3372-a-new-view-of-automatic-relevance-determination.pdf)
