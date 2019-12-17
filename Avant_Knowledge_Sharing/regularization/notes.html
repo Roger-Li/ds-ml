@@ -2,7 +2,7 @@
     <html>
     <head>
         <meta charset="UTF-8">
-        <title>Reading Notes on Regularization and Bayesian Modeling</title>
+        <title>Notes on Regularization and Bayesian Modeling</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
@@ -21,9 +21,10 @@
         <script src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
     </head>
     <body class="vscode-light">
-        <p>Table of Contents</p>
+        <h1 id="notes-on-regularization-and-bayesian-modeling">Notes on Regularization and Bayesian Modeling</h1>
+<p>Avant Knowledge Sharing Session on 1/7/2019, Tuesday</p>
 <ul>
-<li><a href="#reading-notes-on-regularization-and-bayesian-modeling">Reading Notes on Regularization and Bayesian Modeling</a>
+<li><a href="#notes-on-regularization-and-bayesian-modeling">Notes on Regularization and Bayesian Modeling</a>
 <ul>
 <li><a href="#1-regularized-linear-regression">1. Regularized (Linear) Regression</a></li>
 <li><a href="#2-scikit-learn-liner-models">2. Scikit-learn: Liner Models</a>
@@ -46,12 +47,10 @@
 <li><a href="#29-polynomial-regression-extending-linear-models-with-basis-functions">2.9. Polynomial regression: extending linear models with basis functions</a></li>
 </ul>
 </li>
-</ul>
-</li>
 <li><a href="#3-references">3. References</a></li>
 </ul>
-<h1 id="reading-notes-on-regularization-and-bayesian-modeling">Reading Notes on Regularization and Bayesian Modeling</h1>
-<p>Avant Knowledge Sharing Session on 1/7/2019, Tuesday</p>
+</li>
+</ul>
 <h2 id="1-regularized-linear-regression">1. <a href="http://uc-r.github.io/regularized_regression">Regularized (Linear) Regression</a></h2>
 <ul>
 <li>Why regularization?
@@ -192,7 +191,7 @@
 <li>Polynomial regression is <em><strong>linear</strong></em> models trained on nonlinear functions of the original data, which is able to maintain the generally fast performance of linear methods while allowing them to fit a much wider range of data.</li>
 <li>The <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures"><code>PolynomialFeatures</code></a> scikit-learn transformer can create higher powers (with <code>degree</code>) or interactions (with <code>interaction_only=True</code>) of the original features.</li>
 </ul>
-<h1 id="3-references">3. References</h1>
+<h2 id="3-references">3. References</h2>
 <p>Two major documents that have been through</p>
 <ul>
 <li><a href="http://uc-r.github.io/regularized_regression">UC Business Analytics R Programming Guide - Regularized Regression</a></li>

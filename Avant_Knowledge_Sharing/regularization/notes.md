@@ -1,6 +1,9 @@
-Table of Contents
+# Notes on Regularization and Bayesian Modeling
 
-- [Reading Notes on Regularization and Bayesian Modeling](#reading-notes-on-regularization-and-bayesian-modeling)
+Avant Knowledge Sharing Session on 1/7/2019, Tuesday
+
+
+- [Notes on Regularization and Bayesian Modeling](#notes-on-regularization-and-bayesian-modeling)
   - [1. Regularized (Linear) Regression](#1-regularized-linear-regression)
   - [2. Scikit-learn: Liner Models](#2-scikit-learn-liner-models)
     - [2.1. LASSO](#21-lasso)
@@ -16,11 +19,8 @@ Table of Contents
       - [2.8.3. Huber regression](#283-huber-regression)
       - [2.8.4. Notes](#284-notes)
     - [2.9. Polynomial regression: extending linear models with basis functions](#29-polynomial-regression-extending-linear-models-with-basis-functions)
-- [3. References](#3-references)
+  - [3. References](#3-references)
 
-# Reading Notes on Regularization and Bayesian Modeling
-
-Avant Knowledge Sharing Session on 1/7/2019, Tuesday
 
 ## 1. [Regularized (Linear) Regression](http://uc-r.github.io/regularized_regression)
 
@@ -134,7 +134,7 @@ $$H_\epsilon(z) = \begin{cases}
 - Polynomial regression is ***linear*** models trained on nonlinear functions of the original data, which is able to maintain the generally fast performance of linear methods while allowing them to fit a much wider range of data. 
 - The [`PolynomialFeatures`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures) scikit-learn transformer can create higher powers (with `degree`) or interactions (with `interaction_only=True`) of the original features.
 
-# 3. References
+## 3. References
 Two major documents that have been through
 
 - [UC Business Analytics R Programming Guide - Regularized Regression](http://uc-r.github.io/regularized_regression)
