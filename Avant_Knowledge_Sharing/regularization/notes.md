@@ -121,7 +121,7 @@ $$H_\epsilon(z) = \begin{cases}
 
 #### 2.8.4. Notes
 - Choosing robust estimator (from scikit-learn)
-![sklearn_robust_estimator_tradeoff](/Avant_Knowledge_Sharing/regularization/images/sklearn_robust_estimator_tradeoff.png)
+![sklearn_robust_estimator_tradeoff](images/sklearn_robust_estimator_tradeoff.png)
 
 - Robust fitting in high-dimensional setting (large `n_features`) is very hard
 
