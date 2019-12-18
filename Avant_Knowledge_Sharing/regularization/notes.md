@@ -19,14 +19,19 @@ Avant Knowledge Sharing Session on 1/7/2019, Tuesday
       - [2.8.3. Huber regression](#283-huber-regression)
       - [2.8.4. Notes](#284-notes)
     - [2.9. Polynomial regression: extending linear models with basis functions](#29-polynomial-regression-extending-linear-models-with-basis-functions)
-  - [3. References](#3-references)
+  - [3. Selected sections of the Bishop's.](#3-selected-sections-of-the-bishops)
+    - [3.1 Linear basis function models (sec. 3.1, pp. 138 - 146)](#31-linear-basis-function-models-sec-31-pp-138---146)
+      - [3.1.1. Linear models and maximum likelihood](#311-linear-models-and-maximum-likelihood)
+      - [3.1.2. Regularized least squares](#312-regularized-least-squares)
+    - [3.1 Bayesian linear regression (sec. 3.3 pp. 152)](#31-bayesian-linear-regression-sec-33-pp-152)
+  - [4. References](#4-references)
 
 
 ## 1. [Regularized (Linear) Regression](http://uc-r.github.io/regularized_regression)
 
 - Why regularization?
   - *Multicollinearity*. Coefficients for correlated features become over-inflated and can fluctuate significantly.  
-  - *Insufficient Solution*. When $p > n$, the [solution matrix](https://en.wikipedia.org/wiki/Projection_matrix) (i.e., $\hat{\beta} =[(X^TX)^{-1}X^T]Y$) is invertible, which leads to non-unique solutions.
+  - *Insufficient Solution*. When $p > n$, the [solution matrix](https://en.wikipedia.org/wiki/Projection_matrix) (i.e., $\hat{\beta} =[(X^TX)^{-1}X^T]Y$) is non-invertible, which leads to non-unique solutions.
   - *Interpretability*. A smaller subset of strong features are usually preferred.
 - [Ridge Regression](https://en.wikipedia.org/wiki/Tikhonov_regularization)
   - pushing correlated features towards each other rather than allowing for one to be wildly positive and the other wildly negative (as would have happened in OLS with correlated features). Reducing noice and identifying true signals in mdoel effects.
@@ -123,7 +128,7 @@ $$H_\epsilon(z) = \begin{cases}
 #### 2.8.4. Notes
 - Choosing robust estimator (from scikit-learn)
 
-![sklearn_robust_estimator_tradeoff](images/sklearn_robust_estimator_tradeoff.png)
+![How to select an sklearn robust estimator](images/sklearn_robust_estimator_tradeoff.png)
 
 - Robust fitting in high-dimensional setting (large `n_features`) is very hard
 
@@ -134,11 +139,65 @@ $$H_\epsilon(z) = \begin{cases}
 - Polynomial regression is ***linear*** models trained on nonlinear functions of the original data, which is able to maintain the generally fast performance of linear methods while allowing them to fit a much wider range of data. 
 - The [`PolynomialFeatures`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures) scikit-learn transformer can create higher powers (with `degree`) or interactions (with `interaction_only=True`) of the original features.
 
-## 3. References
+## 3. Selected sections of the Bishop's.
+### 3.1 Linear basis function models (*sec. 3.1, pp. 138 - 146*) 
+
+#### 3.1.1. Linear models and maximum likelihood
+- A linear basis function model can be represented as below
+ $$y(\mathbf{x}, \mathbf{w}) = \sum_{j=0}^{M-1}w_j\phi_j(\mathbf{x}) = \mathbf{w}^T\mathbf{\phi(x)}$$
+
+ where $\mathbf{w} = (w_0,...,w_{M-1})^T$ is the weight vector, and $\mathbf{\phi} = (\phi_0,...,\phi_{M-1})^T$ are basis functions. Commonly considered basis functions include exponential $\phi_j(x) = \exp\{-\frac{(x-\mu_j)^2}{2s^2}\}$; and sigmoidal $\phi_j(x) = \sigma(\frac{x-\mu_j}{s})$ where $\sigma(a) = \frac{1}{1+\exp(-a)}$.
+
+- Target variable $t$ is assumed to be given by a deterministic function $y(\mathbf{x}, \mathbf(w))$ with additive Gaussian noice $t = y(\mathbf{x}, \mathbf(w)) + \epsilon$
+
+- Log-likelihood function is 
+  
+  $$ \ln p(\mathbf{t}|\mathbf{w},\beta) = \sum_{n=1}^N\ln \mathcal{N}(t_n|\mathbf{w}^T\mathbf{\phi}(\mathbf{X}_n), \beta^{-1}) = \frac{N}{2}\ln \beta - \frac{N}{2}\ln (2\pi)-\beta \mathbf{E}_D(\mathbf(w))$$
+
+where $\beta$ is the precisionof the Gaussian distribution that $t$ follows, and
+
+- Sum-of-squares error function is defined by 
+
+$$\mathbf{E}_D(\mathbf{w}) = \frac{1}{2}\sum_{n=1}^N\{t_n - \mathbf{w}^T\mathbf{\phi}(\mathbf{X}_n)\}^2$$
+
+- The MLE is then derived by setting the gradient to zero, which gives
+
+$$\mathbf{w}_{\text{ML}} = (\Phi^T\Phi)^{-1}\Phi^T\mathbf{t}$$
+
+#### 3.1.2. Regularized least squares
+- Adding a regularization term to the original error function $\mathbf{E}_D(\mathbf{w}) + \lambda \mathbf{E}_W(\mathbf{w})$
+
+- Using *weight decay* / (ridge) shrinkage as regularization leads to
+
+
+$$\frac{1}{2}\sum_{n=1}^N\{t_n - \mathbf{w}^T\mathbf{\phi}(\mathbf{X}_n)\}^2 +\dfrac{\lambda}{2}\mathbf{w}^T\mathbf{w}$$
+
+
+- the cost function above remains quadratic w.r.t. $\mathbf{w}$, and the solution is
+
+$$\mathbf{w}^* = (\lambda \mathbf{I} + \Phi^T\Phi)^{-1}\Phi^T\mathbf{t}$$
+
+- Notice that the $\lambda \mathbf{I}$ improves the numeric stability when $\Phi^T\Phi$ is close to being non-invertible.
+
+- A generalization of the weight decay takes the form below ($q=2$ leads to ridge regression, and $q=1$ leads to LASSO)
+
+
+$$\frac{1}{2}\sum_{n=1}^N\{t_n - \mathbf{w}^T\mathbf{\phi}(\mathbf{X}_n)\}^2 +\dfrac{\lambda}{2}\sum_{i=1}^M|w_j|^q$$
+
+- LASSO has the property that with large enough $\lambda$ some of the weights $w_j$'s are driven to zero, which leads to sparse solutions. 
+
+- The figure from the Bishop's below shows why LASSO can result in sparse solutions.
+
+![Why LASSO can lead to sparsity?](images/bishop_fig_34_lasso.png)
+
+### 3.1 Bayesian linear regression (*sec. 3.3 pp. 152*)
+
+## 4. References
 Two major documents that have been through
 
 - [UC Business Analytics R Programming Guide - Regularized Regression](http://uc-r.github.io/regularized_regression)
 - [Scikit-learn documentation - 1.1 Linear Models](https://scikit-learn.org/stable/modules/linear_model.html).
+- Christopher M. Bishop, 2006. *Pattern Recognition and Machine Learning*
 
 Notes and further readings on a variety of sub-topics.
 
