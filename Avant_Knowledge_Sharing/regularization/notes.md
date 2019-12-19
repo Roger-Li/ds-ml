@@ -23,7 +23,9 @@ Avant Knowledge Sharing Session on 1/7/2019, Tuesday
     - [3.1 Linear basis function models (sec. 3.1, pp. 138 - 146)](#31-linear-basis-function-models-sec-31-pp-138---146)
       - [3.1.1. Linear models and maximum likelihood](#311-linear-models-and-maximum-likelihood)
       - [3.1.2. Regularized least squares](#312-regularized-least-squares)
-    - [3.1 Bayesian linear regression (sec. 3.3 pp. 152)](#31-bayesian-linear-regression-sec-33-pp-152)
+    - [3.2 Bayesian linear regression (sec. 3.3 pp. 152)](#32-bayesian-linear-regression-sec-33-pp-152)
+      - [3.2.1 Bayes rule and Gaussian conjugate prior](#321-bayes-rule-and-gaussian-conjugate-prior)
+      - [3.2.2 Bayesian linear regression](#322-bayesian-linear-regression)
   - [4. References](#4-references)
 
 
@@ -128,7 +130,7 @@ $$H_\epsilon(z) = \begin{cases}
 #### 2.8.4. Notes
 - Choosing robust estimator (from scikit-learn)
 
-![How to select an sklearn robust estimator](images/sklearn_robust_estimator_tradeoff.png)
+![How to select an sklearn robust estimator](./assets/images/sklearn_robust_estimator_tradeoff.png)
 
 - Robust fitting in high-dimensional setting (large `n_features`) is very hard
 
@@ -148,7 +150,7 @@ $$H_\epsilon(z) = \begin{cases}
 
  where $\mathbf{w} = (w_0,...,w_{M-1})^T$ is the weight vector, and $\mathbf{\phi} = (\phi_0,...,\phi_{M-1})^T$ are basis functions. Commonly considered basis functions include exponential $\phi_j(x) = \exp\{-\frac{(x-\mu_j)^2}{2s^2}\}$; and sigmoidal $\phi_j(x) = \sigma(\frac{x-\mu_j}{s})$ where $\sigma(a) = \frac{1}{1+\exp(-a)}$.
 
-- Target variable $t$ is assumed to be given by a deterministic function $y(\mathbf{x}, \mathbf(w))$ with additive Gaussian noice $t = y(\mathbf{x}, \mathbf(w)) + \epsilon$
+- Target variable $t$ is assumed to be given by a deterministic function $y(\mathbf{x}, \mathbf(w))$ with additive Gaussian noice $t = y(\mathbf{x}, \mathbf{w}) + \epsilon$
 
 - Log-likelihood function is 
   
@@ -188,9 +190,57 @@ $$\frac{1}{2}\sum_{n=1}^N\{t_n - \mathbf{w}^T\mathbf{\phi}(\mathbf{X}_n)\}^2 +\d
 
 - The figure from the Bishop's below shows why LASSO can result in sparse solutions.
 
-![Why LASSO can lead to sparsity?](images/bishop_fig_34_lasso.png)
+![Why LASSO can lead to sparsity?](./assets/images/bishop_fig_34_lasso.png)
 
-### 3.1 Bayesian linear regression (*sec. 3.3 pp. 152*)
+### 3.2 Bayesian linear regression (*sec. 3.3 pp. 152*)
+#### 3.2.1 Bayes rule and Gaussian conjugate prior
+- The bayesian treatment of linear regression introduces a prior probability distribution over the parameter $\mathbf{w}$, i.e., $p(\mathbf{w})$. The task is that with the likelihood function $p({\mathbf{t}|\mathbf{w}})$ (i.e., the model), we would like to estimate the posterior distribution $p(\mathbf{w}|\mathbf{t})$.
+
+- Bayes' theorem
+  
+$$p(\mathbf{w}|\mathbf{t}) = \frac{p({\mathbf{t}|\mathbf{w}}) p(\mathbf{w})}{\int p({\mathbf{t}|\mathbf{w'}}) p(\mathbf{w'})d \mathbf{w'}} \propto p({\mathbf{t}|\mathbf{w}})$$ 
+
+- Choosing a proper prior distribution is one of main topics in Bayesian inference. When the posterior distribution are in the same distribution family as the prior, the prior / posterior are called **conjugate distributions**, and the prior is called a **conjugate piror** for the likelihood function. check the [wiki/Conjugate prior](https://en.wikipedia.org/wiki/Conjugate_prior) for the table of conjugate distributions.
+- In linear regression, we often use Gaussian likelihood function, for which Gaussian family is self-conjugate.
+
+#### 3.2.2 Bayesian linear regression
+- For linear basis function models $t = y(\mathbf{x}, \mathbf{w}) + \epsilon$ where $\epsilon \sim \mathcal{N}(0, \beta^{-1})$, a bayesian treatment would be as follows:
+
+  - (prior) $\mathbf{w} \sim \mathcal{N}(\mathbf{w}|\mathbf{m}_0, \mathbf{S}_0)$
+
+  - (likelihood) $p(\mathbf{t}|\mathbf{w}) = \sum_{n=1}^N \mathcal{N}(t_n|\mathbf{w}^T\phi(\mathbf{x}_n), \beta^{-1})$
+
+  - (posterior) $\mathbf{w} | \mathbf{t} \sim \mathcal{N}(\mathbf{w}|\mathbf{m}_N, \mathbf{S}_N)$, where 
+
+$$\mathbf{m}_N = \mathbf{S}_N(\mathbf{S}_0^{-1}\mathbf{m}_0)+\beta \Phi ^T\mathbf{t}$$
+$$\mathbf{S}_N^{-1} = \mathbf{S}_N^{-1} + \beta \Phi^T\Phi$$
+
+- Because the posterior is Gausian, the maximum a posteriori estimator (MAP) is given by $\mathbf{w}_{\text{MAP}} = \mathbf{m}_N$
+
+- Connection with linear basis function model in a frequentist view. If the prior is infinitely broad, i.e., $\mathbf{S}_0 = \alpha^{-1}I$ and $\alpha \rightarrow 0$, the MAP is the same as the maximum likelihood estimator, as shown below:
+
+$$\mathbf{w}_{\text{MAP}} = (\beta \Phi^T\Phi)^{-1}(\beta \Phi^T\mathbf{t}) = (\Phi^T\Phi)^{-1}\Phi^T\mathbf{t} = \mathbf{w}_{\text{ML}}$$
+
+- Prior vs. posterior: if $N=0$, i.e., no data is observed, we have $\mathbf{S}_N^{-1} = \mathbf{S}_0^{-1}$, and $\mathbf{m}_N = \mathbf{m}_0$. The posterior is the same as the prior.
+
+ - Connection with ridge regression. If we consider zero-mean isotropic Gassuan prior 
+
+$$\mathbf{w} \sim \mathcal{N}(\mathbf{w}|\mathbf{0}, \alpha ^{-1} \mathbf{I})$$
+
+  the posterior parameters become the following
+
+$$\mathbf{m}_N = \beta \mathbf{S}_N\Phi^T\mathbf{t} $$
+
+$$\mathbf{S}_N^{-1} = \alpha \mathbf{I} + \beta \Phi^T\Phi$$
+
+, and the log of the posterior distribution is given by
+
+$$\ln(p(\mathbf{w}|\mathbf{t})) = -\dfrac{\beta}{2}\sum_{n=1}^N\{t_n - \mathbf{w}^T\phi(\mathbf{x}_n)\}^2 - \dfrac{\alpha}{2}\mathbf{w}^T\mathbf{w} + \text{const.}$$
+
+Note that maximizing the log of posterior probability is the same as the [regularized least square](#312-regularized-least-squares) with $\lambda = \alpha / \beta$
+
+
+
 
 ## 4. References
 Two major documents that have been through

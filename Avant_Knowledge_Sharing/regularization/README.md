@@ -1,4 +1,4 @@
 Avant Knowledge Sharing Session on 1/7/2019, Tuesday
 - Topic: regularization in machine learning, and bayesian modeling.
-- Reading notes in [Markdown](notes.md) (not "math friendly" on GitHub),  [PDF](notes.pdf), and [HTML](https://htmlpreview.github.io/?https://github.com/Roger-Li/ds-ml-post/blob/knowledge_share_regularization/Avant_Knowledge_Sharing/regularization/notes.html) (images not inserted).
+- Reading notes in [Markdown](notes.md) (not "math friendly" on GitHub),  [PDF](notes.pdf), and [HTML](https://htmlpreview.github.io/?https://github.com/Roger-Li/ds-ml-post/blob/knowledge_share_regularization/Avant_Knowledge_Sharing/regularization/notes.html) (currently pointing to the file on a separate branch).
 - [Jupyter Notebook](regularization_and_bayesian.ipynb)
