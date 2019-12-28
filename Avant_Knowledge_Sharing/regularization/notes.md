@@ -156,7 +156,7 @@ $$H_\epsilon(z) = \begin{cases}
   
   $$ \ln p(\mathbf{t}|\mathbf{w},\beta) = \sum_{n=1}^N\ln \mathcal{N}(t_n|\mathbf{w}^T\mathbf{\phi}(\mathbf{X}_n), \beta^{-1}) = \frac{N}{2}\ln \beta - \frac{N}{2}\ln (2\pi)-\beta \mathbf{E}_D(\mathbf(w))$$
 
-where $\beta$ is the precisionof the Gaussian distribution that $t$ follows, and
+where $\beta$ is the precision of the Gaussian distribution that $t$ follows, and
 
 - Sum-of-squares error function is defined by 
 
