@@ -213,7 +213,7 @@ $$p(\mathbf{w}|\mathbf{t}) = \frac{p({\mathbf{t}|\mathbf{w}}) p(\mathbf{w})}{\in
   - (posterior) $\mathbf{w} | \mathbf{t} \sim \mathcal{N}(\mathbf{w}|\mathbf{m}_N, \mathbf{S}_N)$, where 
 
 $$\mathbf{m}_N = \mathbf{S}_N(\mathbf{S}_0^{-1}\mathbf{m}_0)+\beta \Phi ^T\mathbf{t}$$
-$$\mathbf{S}_N^{-1} = \mathbf{S}_N^{-1} + \beta \Phi^T\Phi$$
+$$\mathbf{S}_N^{-1} = \mathbf{S}_0^{-1} + \beta \Phi^T\Phi$$
 
 - Because the posterior is Gausian, the maximum a posteriori estimator (MAP) is given by $\mathbf{w}_{\text{MAP}} = \mathbf{m}_N$
 
