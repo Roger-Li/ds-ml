@@ -26,7 +26,15 @@ Avant Knowledge Sharing Session on 1/7/2019, Tuesday
     - [3.2 Bayesian linear regression (sec. 3.3 pp. 152)](#32-bayesian-linear-regression-sec-33-pp-152)
       - [3.2.1 Bayes rule and Gaussian conjugate prior](#321-bayes-rule-and-gaussian-conjugate-prior)
       - [3.2.2 Bayesian linear regression](#322-bayesian-linear-regression)
-  - [4. References](#4-references)
+  - [4. More on LASSO](#4-more-on-lasso)
+    - [4.1. Coordinate descent (CD)](#41-coordinate-descent-cd)
+      - [4.1.1. When does coordinate-wise minimization work?](#411-when-does-coordinate-wise-minimization-work)
+    - [4.2 Algorithms for solving LASSO](#42-algorithms-for-solving-lasso)
+      - [4.2.1. Cordinate descent](#421-cordinate-descent)
+      - [4.2.2. LARS](#422-lars)
+      - [4.2.3. References for LASSO algorithms](#423-references-for-lasso-algorithms)
+    - [4.3 Bayesian interpretation of LASSO](#43-bayesian-interpretation-of-lasso)
+  - [References](#references)
 
 
 ## 1. [Regularized (Linear) Regression](http://uc-r.github.io/regularized_regression)
@@ -36,7 +44,7 @@ Avant Knowledge Sharing Session on 1/7/2019, Tuesday
   - *Insufficient Solution*. When $p > n$, the [solution matrix](https://en.wikipedia.org/wiki/Projection_matrix) (i.e., $\hat{\beta} =[(X^TX)^{-1}X^T]Y$) is non-invertible, which leads to non-unique solutions.
   - *Interpretability*. A smaller subset of strong features are usually preferred.
 - [Ridge Regression](https://en.wikipedia.org/wiki/Tikhonov_regularization)
-  - pushing correlated features towards each other rather than allowing for one to be wildly positive and the other wildly negative (as would have happened in OLS with correlated features). Reducing noice and identifying true signals in mdoel effects.
+  - pushing correlated features towards each other rather than allowing for one to be wildly positive and the other wildly negative (as would have happened in OLS with correlated features). Reducing noice and identifying true signals in the model effects.
   - However, a ridge model will retain all variables. 
 - [LASSO (least absolute shrinkage and selection operator)](https://en.wikipedia.org/wiki/Lasso_(statistics)) 
   - Similar to ridge, lasso pushes many collinear features towards each other rather than allowing for one to be wildly positive and the other negative. But lasso actually pushes coefficients to zero so it can be used for feature selection.
@@ -240,10 +248,90 @@ $$\ln(p(\mathbf{w}|\mathbf{t})) = -\dfrac{\beta}{2}\sum_{n=1}^N\{t_n - \mathbf{w
 Note that maximizing the log of posterior probability is the same as the [regularized least square](#312-regularized-least-squares) with $\lambda = \alpha / \beta$
 
 
+## 4. More on LASSO 
+More good notes and materials were found when I was working on the slides, especially on LASSO and sparsity structure in machine learning models.
 
+### 4.1. [Coordinate descent](https://en.wikipedia.org/wiki/Coordinate_descent) (CD)
+CD is one of the popular algorithm to solve LASSO models.
 
-## 4. References
-Two major documents that have been through
+#### 4.1.1. When does coordinate-wise minimization work?
+
+- Given convex and differentiable $f: \mathbb{R}^n \rightarrow \mathbb{R}$, if we are at a point $x$ such that $f(x)$ is minimized along each coordinate axis, have we found a globale minimizer? i.e.,
+
+$$f(x + d\cdot e_i)\geq f(x) \quad \forall d, i \Rightarrow f(x) = \min_z f(z)$$
+
+The answer is Yes, for 
+
+$$\bigtriangledown f(x) = (\dfrac{\partial f}{\partial x_1}(x),...,\dfrac{\partial f}{\partial x_1}(x)) =0$$
+
+- What if $f$ is only convex but not differentiable? No! (see counterexample in the [lecture note](https://www.cs.cmu.edu/~ggordon/10725-F12/slides/25-coord-desc.pdf))
+- However, when $f(x) = g(x) + \sum_{i=1}^nh_i(x_i)$ with $g$ convex, differentiable, and each $h_i$ convex (notice how the non-smooth part is separable), the answer is Yes again, as for any $y$,
+
+$$f(y) - f(x) = g(x) - g(x) + \sum_{i=1}^n[h_i(y_i) - h_i(x_i)] \\ \geq \bigtriangledown g(x)^T(y-x) + \sum_{i=1}^n[h_i(y_i) - h_i(x_i)] \\ = \sum_{i=1}^n\underbrace{[\bigtriangledown_ig(x)(y_i-x_i) + h_i(y_i)-h_i(x_i)]}_{\geq 0} \geq 0$$
+
+- The last line is true because
+
+$$\bigtriangledown_i g(x) + \partial h_i(x_i) \ni 0 \\\Rightarrow -\bigtriangledown_i g(x) \in \partial h_i(x_i) \\ \Rightarrow h_i(y_i) \geq h_i(x_i) - \bigtriangledown_ig(x)(y_i-x_i)$$
+
+- Review the concept of [subderivative](https://en.wikipedia.org/wiki/Subderivative) and [subgradient](https://see.stanford.edu/materials/lsocoee364b/01-subgradients_notes.pdf)if needed.
+
+### 4.2 Algorithms for solving LASSO
+
+#### 4.2.1. Cordinate descent
+- Define the **soft thresholding** operator as follows
+
+$$ \psi(x; \lambda)= \begin{cases}
+  x - \lambda, & \text{if } x \geq \lambda, \\
+  x + \lambda, & \text{if } x \leq -\lambda \\
+  0, &         \text{else}
+\end{cases}$$
+
+![ST operator](assets/images/soft_threshold_operator.png)
+
+- **Idea:** repeatedly cycle through the parameters and, in each step,
+optimize only a single parameter. 
+
+1. So, when updating $\beta_j$ we solve 
+
+$$\min_{\beta_j\in \mathbb{R}} \frac{1}{2}||\mathbf{y} - \sum_{i: i\neq j}\mathbf{X}_{:i}\beta_i - \mathbf{X}_{:j}\beta_j||^2 + \lambda |\beta_j| + \lambda \sum_{i:i\neq j}|\beta_i|$$
+
+where $\mathbf{X}_{:i}$ is the $i-th column of $\mathbf{X}$.
+
+2. The above optimization has the following solution
+
+$$\beta_j \leftarrow \psi_{st}( \dfrac{\mathbf{X}_{:j}^T(\mathbf{y}- \sum_{i:i\neq j}\mathbf{X}_{:i}\beta_i)}{||\mathbf{X}_{:j}||^2}; \dfrac{\lambda}{||\mathbf{X}_{:j}||^2})$$
+
+- Repeat the above step (1,2) for each coordinate until convergence is reached
+
+Note that the 2., we are solving a univariate version of LASSO, whose objective function is in the form of a convex differentiable function $g$ plus a semi-differentiable function $h$.
+
+#### 4.2.2. LARS
+
+- See [wiki - Least-angle regression](https://en.wikipedia.org/wiki/Least-angle_regression#Pros_and_cons) for details and pros and cons.
+
+#### 4.2.3. References for LASSO algorithms
+- See [Lasso: Algorithms](https://myweb.uiowa.edu/pbreheny/7600/s16/notes/2-17.pdf) by Patrick Breheny for details on LARS and LASSO
+  - Notice that the soft-thresholding operator is defined as follows $S(\cdot;\lambda) = \text{sgn} (x)(|x| - \lambda)\cdot I(|x| > \lambda)$
+
+- See [Lasso: Algorithms and Extensions](http://www.princeton.edu/~yc5/ele538b_sparsity/lectures/lasso_algorithm_extension.pdf) by Yuxin Chen for [proximal gradient methods](https://en.wikipedia.org/wiki/Proximal_gradient_method)
+
+- [Model Selection in Linear Models](http://www.princeton.edu/~yc5/ele538b_sparsity/lectures/model_selection.pdf) by Yuxin Chen also covers Bayesian interpretation and coordinate descent algorithm for LASSO.
+
+- A [Kaggle notebook](https://www.kaggle.com/residentmario/soft-thresholding-with-lasso-regression)implementing soft-thresholding for univariate LASSO regression, which might help to understand the algorithm.
+
+### 4.3 Bayesian interpretation of LASSO
+- Let's use the following notation for OLS $\mathbf{y} = \mathbf{X}\mathbf{\beta} + \mathbf{\epsilon}$, where $\mathbf{\epsilon} \sim \mathcal{N}(\mathbf{0}, \sigma^2\mathbf{I})$.
+- Impose an i.i.d Laplacian prior on $\beta_i$ to encourage sparsity, i.e., $p(\beta_i = z) = \frac{\lambda}{2}e^{-\lambda|z|}$
+- The posterior of $\mathbf{\beta}$ can be derived as follows
+
+$$p(\mathbf{\beta}|\mathbf{y}) \propto p(\mathbf{y} | \mathbf{\beta})p(\mathbf{\beta}) \propto \prod_i^{n}e^{-\frac{(y_i-\beta_i)^2}{2\sigma^2}} \dfrac{\lambda}{2}e^{-\lambda |\beta_i|} \propto \prod_i^{n}\exp\{-\dfrac{(y_i-\beta_i)^2}{2\sigma^2} - \lambda |\beta_i|\}$$
+
+- Hense the MAP estimator is equivalent to the LASSO solution (up to proportionality constant) as below 
+
+$$\mathbf{\beta}_{\text{LASSO}} = \text{arg} \min_{\mathbf{\beta}} \sum_{i=1}^n \{ \dfrac{(y_i - \beta_i)^2}{2\sigma^2} + \lambda |\beta_i| \}$$
+
+## References
+Two major documents that I went through first.
 
 - [UC Business Analytics R Programming Guide - Regularized Regression](http://uc-r.github.io/regularized_regression)
 - [Scikit-learn documentation - 1.1 Linear Models](https://scikit-learn.org/stable/modules/linear_model.html).
@@ -256,4 +344,10 @@ Notes and further readings on a variety of sub-topics.
    - [David Wipf and Srikantan Nagarajan: A new view of automatic relevance determination](https://papers.nips.cc/paper/3372-a-new-view-of-automatic-relevance-determination.pdf)
 - Logistic regression
   - [Liangjie Hong, Notes on Logistic Loss Function](http://www.hongliangjie.com/wp-content/uploads/2011/10/logistic.pdf)
+
+More notes
+- [High-Dimensional Data Analysis by Prof. Patrick Breheny](https://myweb.uiowa.edu/pbreheny/7600/s16/notes.html)
+- On [Coordinate descent](https://www.cs.cmu.edu/~ggordon/10725-F12/slides/25-coord-desc.pdf) by Geoff Gordon & Ryan Tibshirani, as part of the lecture slides on [CMU 10-725 Optimization course](https://www.cs.cmu.edu/~ggordon/10725-F12/).
+- Notes on [Subgradients](https://see.stanford.edu/materials/lsocoee364b/01-subgradients_notes.pdf) by S. Boyd and L. Vandenberghe.
+- [Princeton ELE538B: Sparsity, Structure and Inference](http://www.princeton.edu/~yc5/ele538b_sparsity/lectures.html)
 
