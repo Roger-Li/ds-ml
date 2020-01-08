@@ -30,8 +30,9 @@ Avant Knowledge Sharing Session on 1/7/2019, Tuesday
     - [4.1. Coordinate descent (CD)](#41-coordinate-descent-cd)
       - [4.1.1. When does coordinate-wise minimization work?](#411-when-does-coordinate-wise-minimization-work)
     - [4.2 Algorithms for solving LASSO](#42-algorithms-for-solving-lasso)
-      - [4.2.1. Cordinate descent](#421-cordinate-descent)
-      - [4.2.2. LARS](#422-lars)
+      - [4.2.1. Subgradients and univariate LASSO](#421-subgradients-and-univariate-lasso)
+      - [4.2.2 Coordinate descent for multivariate LASSO](#422-coordinate-descent-for-multivariate-lasso)
+      - [4.2.3. LARS](#423-lars)
       - [4.2.3. References for LASSO algorithms](#423-references-for-lasso-algorithms)
     - [4.3 Bayesian interpretation of LASSO](#43-bayesian-interpretation-of-lasso)
   - [References](#references)
@@ -273,12 +274,33 @@ $$f(y) - f(x) = g(x) - g(x) + \sum_{i=1}^n[h_i(y_i) - h_i(x_i)] \\ \geq \bigtria
 
 $$\bigtriangledown_i g(x) + \partial h_i(x_i) \ni 0 \\\Rightarrow -\bigtriangledown_i g(x) \in \partial h_i(x_i) \\ \Rightarrow h_i(y_i) \geq h_i(x_i) - \bigtriangledown_ig(x)(y_i-x_i)$$
 
-- Review the concept of [subderivative](https://en.wikipedia.org/wiki/Subderivative) and [subgradient](https://see.stanford.edu/materials/lsocoee364b/01-subgradients_notes.pdf)if needed.
 
 ### 4.2 Algorithms for solving LASSO
 
-#### 4.2.1. Cordinate descent
-- Define the **soft thresholding** operator as follows
+#### 4.2.1. Subgradients and univariate LASSO
+
+- For convex $f: \mathbb{R}^n \rightarrow \mathbb{R}$, its subgradient at $x$ is defined as 
+
+$$\partial f(x) = \{s\in \mathbb{R}^n| f(z)\geq f(x) + s^T(z-x), \forall z \in \mathbf{dom} f\}$$
+
+- If $f$ is convex and differentiable, than its gradient at $x$ is a subgradient. If $f$ is not differentiable, it can have multiple subgradients as shown by Figure 1 of [this notes](https://see.stanford.edu/materials/lsocoee364b/01-subgradients_notes.pdf).
+
+- For any convex function $f(\mathbf{\beta})$, $\mathbf{\beta}^*$ is an optimal solution $\iff$ $\mathbf{0} \in \partial f(\mathbf{\beta}^*)$ where $\partial f(\mathbf{\beta})$ is the set of all subgradients at $\mathbf{\beta}$
+
+- $s$ is a subgradient of $f(\beta) = |\beta|$ if 
+
+$$\begin{cases}
+  s = \text{sign}(\beta), & \beta \neq 0 \\
+  s \in [-1, 1], & \beta = 0
+\end{cases}$$
+
+- Now let's look at univariate LASSO, which is convex but not differentiable due to the addition of $\ell_1$ norm, i.e., $\min_{\beta \in \mathbb{R}} \frac{1}{2}||\mathbf{y}-\beta \mathbf{z}||^2+\lambda |\beta|$
+  - its subgradient $g = \mathbf{z}^T(\beta \mathbf{z}-\mathbf{y}) + \lambda \cdot s$ where $s$ is the subgradient of $|\beta|$
+    - The optimality happens when $0 \in g \iff \mathbf{z}^T\mathbf{y} - \beta ||\mathbf{z}||^2 \in \lambda s$, let's take this case by case
+    - If $\beta = 0$, we have  $\mathbf{z}^T\mathbf{y} \in [-\lambda, \lambda]$, i.e., $|\mathbf{z}^T\mathbf{y}| \leq \lambda$
+    - If $\beta > 0$, we have $\beta = \dfrac{\mathbf{z}^T\mathbf{y}}{||\mathbf{z}||^2} - \dfrac{\lambda}{||\mathbf{z}||^2} > 0$, i.e., $\mathbf{z}^T\mathbf{y} > \lambda$
+    - Finally, if $\beta < 0$, we have $\beta = \dfrac{\mathbf{z}^T\mathbf{y}}{||\mathbf{z}||^2} + \dfrac{\lambda}{||\mathbf{z}||^2} < 0$, i.e., $\mathbf{z}^T\mathbf{y} < -\lambda$
+  - So we have verified in univariate case, the LASSO estimator is $\hat{\beta} = \psi_{\text{st}}(\dfrac{\mathbf{z}^Ty}{||\mathbf{z}||^2}; \dfrac{\lambda}{||\mathbf{z}||^2})$, where the **soft thresholding** operator is defined as follows:
 
 $$ \psi(x; \lambda)= \begin{cases}
   x - \lambda, & \text{if } x \geq \lambda, \\
@@ -288,26 +310,38 @@ $$ \psi(x; \lambda)= \begin{cases}
 
 ![ST operator](assets/images/soft_threshold_operator.png)
 
-- **Idea:** repeatedly cycle through the parameters and, in each step,
+
+
+
+#### 4.2.2 Coordinate descent for multivariate LASSO
+- **Idea:** Now we have the two receipes at hand, i.e., optimal estimate of univariate LASSO, and coordinate descent for which multivariate LASSO is eligible. We can repeatedly cycle through the model parameters and, in each step,
 optimize only a single parameter. 
 
 1. So, when updating $\beta_j$ we solve 
 
 $$\min_{\beta_j\in \mathbb{R}} \frac{1}{2}||\mathbf{y} - \sum_{i: i\neq j}\mathbf{X}_{:i}\beta_i - \mathbf{X}_{:j}\beta_j||^2 + \lambda |\beta_j| + \lambda \sum_{i:i\neq j}|\beta_i|$$
 
-where $\mathbf{X}_{:i}$ is the $i-th column of $\mathbf{X}$.
+where $\mathbf{X}_{:i}$ is the $i-th column of $\mathbf{X}$. The above optimization has the following solution (based on the result of the univariate case)
 
-2. The above optimization has the following solution
+$$\beta_j \leftarrow \psi_{\text{st}}( \dfrac{\mathbf{X}_{:j}^T(\mathbf{y}- \sum_{i:i\neq j}\mathbf{X}_{:i}\beta_i)}{||\mathbf{X}_{:j}||^2}; \dfrac{\lambda}{||\mathbf{X}_{:j}||^2})$$
 
-$$\beta_j \leftarrow \psi_{st}( \dfrac{\mathbf{X}_{:j}^T(\mathbf{y}- \sum_{i:i\neq j}\mathbf{X}_{:i}\beta_i)}{||\mathbf{X}_{:j}||^2}; \dfrac{\lambda}{||\mathbf{X}_{:j}||^2})$$
+2. We move on to the next parameter (e.g., $\beta_{j+1}$)
 
-- Repeat the above step (1,2) for each coordinate until convergence is reached
+- Repeat the above step (1,2) for each coordinate until convergence is reached.
 
-Note that the 2., we are solving a univariate version of LASSO, whose objective function is in the form of a convex differentiable function $g$ plus a semi-differentiable function $h$.
+#### 4.2.3. LARS
+- LARS is the first efficient algorithm for LASSO is (in my mind) more intuitively related to variable selection property of LASSO.
 
-#### 4.2.2. LARS
-
-- See [wiki - Least-angle regression](https://en.wikipedia.org/wiki/Least-angle_regression#Pros_and_cons) for details and pros and cons.
+- Basic steps of LARS are as follows:
+    - Start with all parameters $\beta$ equal to zero ($\lambda_{\infty}$)
+    - Lower $\lambda$ to allow the parameter $\beta_j$ to the predictor $\mathbf{x}_j$ that is most correlated with $\mathbf{y}$ into the model.
+    - Increase $\beta_j$ in the direction of the sign of corr$(\mathbf{x}_j, \mathbf{y})$ and take residuals $\mathbf{r} = \mathbf{y}-\hat{\mathbf{y}}$ along the way. Stop when another predictor $\mathbf{x}_k$ has as much correlation with $\mathbf{r}$ as $\mathbf{x}_j$.
+    - Include $\mathbf{x}_k$ and increase ($\beta_j, \beta_k$) in their joint least squares direction (i.e., projection of $r$ onto $[\beta_j, \beta_k]^T$) until the next predictor $\mathbf{x}_m$ reaches the necessary level of correlation with $\mathbf{r}$, all with $\lambda$ lowered along the way.
+    - Repeat until $\lambda$ hits a predetermined threshold or small enough for all the variables to be included.
+- Remarks on LARS
+  - Notice that when solving LASSO using LARS, we always proceed in the direction such that every active predictor is equally correlated with the residual $\mathbf{r}$, which is consistent with the KKT conditions of LASSO (not covered here).
+  - Nevertheless, coordinate descent and variant has become more popular due to its simplicity and flexibility.
+  - See [wiki - Least-angle regression](https://en.wikipedia.org/wiki/Least-angle_regression#Pros_and_cons) for pros and cons.
 
 #### 4.2.3. References for LASSO algorithms
 - See [Lasso: Algorithms](https://myweb.uiowa.edu/pbreheny/7600/s16/notes/2-17.pdf) by Patrick Breheny for details on LARS and LASSO
