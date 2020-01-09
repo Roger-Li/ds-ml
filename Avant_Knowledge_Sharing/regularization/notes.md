@@ -355,14 +355,18 @@ $$\beta_j \leftarrow \psi_{\text{st}}( \dfrac{\mathbf{X}_{:j}^T(\mathbf{y}- \sum
 
 ### 4.3 Bayesian interpretation of LASSO
 - Let's use the following notation for OLS $\mathbf{y} = \mathbf{X}\mathbf{\beta} + \mathbf{\epsilon}$, where $\mathbf{\epsilon} \sim \mathcal{N}(\mathbf{0}, \sigma^2\mathbf{I})$.
-- Impose an i.i.d Laplacian prior on $\beta_i$ to encourage sparsity, i.e., $p(\beta_i = z) = \frac{\lambda}{2}e^{-\lambda|z|}$
-- The posterior of $\mathbf{\beta}$ can be derived as follows
+- Impose an i.i.d zero-mean [Laplacian prior](https://en.wikipedia.org/wiki/Laplace_distribution) on $\beta_j$ for $j = 1,...,p$ to encourage sparsity, i.e., 
+$$\beta_j \sim \frac{1}{2b}\exp(-\dfrac{|\beta_j|}{b})$$
+where $b$ controls the variance of the Laplace distribution.
+- Recall that the likelihood is 
+$$p(\mathbf{y}|\mathbf{\beta}) = \prod_{i=1}^n \mathcal{N}(y_i|\mathbf{x_i}^T\mathbf{\beta}, \sigma^2)$$
+- The posterior distribution of $\mathbf{\beta}$ can be derived as follows
+$$p(\mathbf{\beta}|\mathbf{y}) \propto p(\mathbf{y} | \mathbf{\beta})p(\mathbf{\beta}) \\ \propto \prod_i^{n}\exp[-\frac{(\mathbf{y}_i-\mathbf{x}_i^T\mathbf{\beta})^2}{2\sigma^2}] \cdot \prod_{j=1}^p \dfrac{1}{2b} \exp[-\dfrac{|\beta_j|}{b}] \\ \propto \prod_i^{n}\exp[-(\mathbf{y}_i-\mathbf{x}_i^T\mathbf{\beta})^2] \cdot \prod_{j=1}^p \exp[-\lambda|\beta_j|]$$
+The last line introduces a new constant $\lambda$ and removes other constants.
 
-$$p(\mathbf{\beta}|\mathbf{y}) \propto p(\mathbf{y} | \mathbf{\beta})p(\mathbf{\beta}) \propto \prod_i^{n}e^{-\frac{(y_i-\beta_i)^2}{2\sigma^2}} \dfrac{\lambda}{2}e^{-\lambda |\beta_i|} \propto \prod_i^{n}\exp\{-\dfrac{(y_i-\beta_i)^2}{2\sigma^2} - \lambda |\beta_i|\}$$
+- Hense the MAP estimator is equivalent to the LASSO solution as shown below 
 
-- Hense the MAP estimator is equivalent to the LASSO solution (up to proportionality constant) as below 
-
-$$\mathbf{\beta}_{\text{LASSO}} = \text{arg} \min_{\mathbf{\beta}} \sum_{i=1}^n \{ \dfrac{(y_i - \beta_i)^2}{2\sigma^2} + \lambda |\beta_i| \}$$
+$$\mathbf{\beta}_{\text{MAP}} = \text{arg} \max_{\mathbf{\beta}} - [\sum_{i=1}^n (y_i - \mathbf{x}_i^T\mathbf{\beta})^2 + \lambda \sum_{j=1}^p|\beta_i|] = \mathbf{\beta}_{\text{LASSO}} $$
 
 ## References
 Two major documents that I went through first.
