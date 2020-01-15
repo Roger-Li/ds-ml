@@ -13225,7 +13225,7 @@ a.anchor-link {
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Linear-regression-recap">Linear regression recap<a class="anchor-link" href="#Linear-regression-recap">&#182;</a></h2><p>Recall that in the context of linear regression, we have 
 $$\mathbf{y} = \mathbf{X \beta} + \mathbf{\epsilon}$$ 
-where $\mathbf{y} \in \mathbb{R}^n$ is the target variable, $\mathbf{X} \in \mathbb{R}^{n \times p}$ is the design matrix, $\mathbf{\beta} \in \mathbb{R}^d$ is the parameter vector, and the error $\epsilon_i \overset{\text{iid}}{\sim} \mathcal{N}(0,\sigma^2)$. We will use $\mathbf{x}_i (\in \mathbb{R}^p)$  to denote the $i$-th data point, and $\mathbf{X}_{:j}$ to denote the $j$-th column of $\mathbf{X}$, and use $\mathbf{x}^{(j)}$ as the j-th variable.</p>
+where $\mathbf{y} \in \mathbb{R}^n$ is the target variable, $\mathbf{X} \in \mathbb{R}^{n \times p}$ is the design matrix, $\mathbf{\beta} \in \mathbb{R}^d$ is the parameter vector, and the error $\epsilon_i \overset{\text{iid}}{\sim} \mathcal{N}(0,\sigma^2)$. We will use $\mathbf{x}_i (\in \mathbb{R}^p)$ to denote the $i$-th data point, $\mathbf{x}_{:j} (\in \mathbb{R}^n)$ or $\mathbf{X}_{:j}$ to denote the $j$-th variable or $j$-th column of $\mathbf{X}$.</p>
 <p>The negative log-likelihood is 
 $$L(\mathbf{\beta}|\mathbf{X, y}) = \dfrac{n}{2}\log (2\pi \sigma^2) + \dfrac{1}{2\sigma^2}\sum_{i=1}^n(y_i -\mathbf{x}_i^{T}\mathbf{\beta})^2$$
 Notice that the <strong>MLE</strong> is also the least squares soltion 
@@ -13273,7 +13273,7 @@ where</p>
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Ridge-regression">Ridge regression<a class="anchor-link" href="#Ridge-regression">&#182;</a></h2><h3 id="Penalty">Penalty<a class="anchor-link" href="#Penalty">&#182;</a></h3><p>One choice of $P_\lambda$ that favors small model parameters is to penalize the sum of squares of the regression coefficients:</p>
 $$P (\mathbf{\beta}) = \sum_{j=1}^p\beta_j^2$$<p>and the whole loss function becomes</p>
-$$Loss(\mathbf{\beta}) = \dfrac{1}{2}\sum_{i=1}^n(y_i -\mathbf{x}_i^T\mathbf{\beta})^2 + \dfrac{\lambda}{2}\sum_{j=1}^p\beta_j^2$$<p>which is known as <strong><em>ridge regression</em></strong> in statistics.</p>
+$$Loss(\mathbf{\beta}) = \dfrac{1}{2}\sum_{i=1}^n(y_i -\mathbf{x}_i^{T}\mathbf{\beta})^2 + \dfrac{\lambda}{2}\sum_{j=1}^p\beta_j^2$$<p>which is known as <strong><em>ridge regression</em></strong> in statistics.</p>
 
 </div>
 </div>
@@ -13422,7 +13422,7 @@ $$\log p(\mathbf{\beta}|\mathbf{y})  = \log p(\mathbf{y}|\mathbf{\beta}) + \log 
 $$\mathbf{\beta} \sim \mathcal{N}(\mathbf{\beta} | \mathbf{m_0, S_0})$$</p>
 </li>
 <li><p>Likelihood 
-$$p(\mathbf{y}|\mathbf{\beta}) = \prod_{i=1}^n \mathcal{N}(y_i|\mathbf{x}_i^T\mathbf{\beta}, \tau^{-1})$$</p>
+$$p(\mathbf{y}|\mathbf{\beta}) = \prod_{i=1}^n \mathcal{N}(y_i|\mathbf{x}_i^{T}\mathbf{\beta}, \tau^{-1})$$</p>
 </li>
 <li><p>Posterior 
 $$\mathbf{\beta}|\mathbf{y} \sim \mathcal{N}(\mathbf{\beta} | \mathbf{m_n, S_n})$$</p>
@@ -13799,9 +13799,9 @@ as previously shown.</li>
 <li><p>Basic steps of LARS are as follows:</p>
 <ul>
 <li>Start with all parameters $\beta$ equal to zero ($\lambda_{\infty}$)</li>
-<li>Lower $\lambda$ to allow the parameter $\beta_j$ to the predictor $\mathbf{x}^{(j)}$ that is most correlated with $\mathbf{y}$ into the model.</li>
-<li>Increase $\beta_j$ in the direction of the sign of corr$(\mathbf{x}^{(j)}, \mathbf{y})$ and take residuals $\mathbf{r} = \mathbf{y}-\hat{\mathbf{y}}$ along the way. Stop when another predictor $\mathbf{x}^{(k)}$ has as much correlation with $\mathbf{r}$ as $\mathbf{x}^{(j)}$.</li>
-<li>Include $\mathbf{x}^{(k)}$ and increase ($\beta_j, \beta_k$) in their joint least squares direction (i.e., projection of $\mathbf{r}$ onto $[\beta_j, \beta_k]^T$) until the next predictor $\mathbf{x}^{(m)}$ reaches the necessary level of correlation with $\mathbf{r}$, all with $\lambda$ lowered along the way.</li>
+<li>Lower $\lambda$ to allow the parameter $\beta_j$ to the predictor $\mathbf{x}_{:j}$ that is most correlated with $\mathbf{y}$ into the model.</li>
+<li>Increase $\beta_j$ in the direction of the sign of corr$(\mathbf{x}_{:j}, \mathbf{y})$ and take residuals $\mathbf{r} = \mathbf{y}-\hat{\mathbf{y}}$ along the way. Stop when another predictor $\mathbf{x}_{:k}$ has as much correlation with $\mathbf{r}$ as $\mathbf{x}_{:j}$.</li>
+<li>Include $\mathbf{x}_{:k}$ and increase ($\beta_j, \beta_k$) in their joint least squares direction (i.e., projection of $\mathbf{r}$ onto $[\beta_j, \beta_k]^T$) until the next predictor $\mathbf{x}_{:m}$ reaches the necessary level of correlation with $\mathbf{r}$, all with $\lambda$ lowered along the way.</li>
 <li>Repeat until $\lambda$ hits a predetermined threshold or small enough for all the variables to be included.</li>
 </ul>
 </li>
@@ -13947,7 +13947,7 @@ where $b$ controls the variance of the Laplace distribution.</li>
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Bayesian-interpretation-of-LASSO-(continued)">Bayesian interpretation of LASSO (continued)<a class="anchor-link" href="#Bayesian-interpretation-of-LASSO-(continued)">&#182;</a></h3><ul>
 <li>Recall that the likelihood function
-$$p(\mathbf{y}|\mathbf{\beta}) = \prod_{i=1}^n \mathcal{N}(y_i|\mathbf{x_i}^T\mathbf{\beta}, \sigma^2)$$</li>
+$$p(\mathbf{y}|\mathbf{\beta}) = \prod_{i=1}^n \mathcal{N}(y_i|\mathbf{x}_i^T\mathbf{\beta}, \sigma^2)$$</li>
 <li>The posterior distribution of $\mathbf{\beta}$ can be derived as follows:
 $$
 \begin{align}
@@ -13998,7 +13998,7 @@ $$\hat{\beta_j} = \psi_{\text{st}}( \frac{\mathbf{X}_{:j}^T(\mathbf{y}- \sum_{i:
 <h3 id="Grouping-effect">Grouping effect<a class="anchor-link" href="#Grouping-effect">&#182;</a></h3><ul>
 <li>Unlike LASSO, which tends to randomly select one of the highly correlated features, the Elastic Net solution has a property known as the <em>grouping effect</em>, which states that highly correlated features will have similar estimated parameters:
 $$|\hat{\beta_j} -\hat{\beta_k}| \leq \dfrac{|\mathbf{y}|\sqrt{2(1-\rho_{jk})}}{\lambda_2}$$
-where $\rho_{jk} = \hat{\text{corr}}(\mathbf{x}^{(j)},\mathbf{x}^{(k)})$ is the sample correlation </li>
+where $\rho_{jk} = \hat{\text{corr}}(\mathbf{x}_{:j},\mathbf{x}_{:k})$ is the sample correlation betwwo the $j$-th and $k$-th feature.</li>
 <li>Note that as $\rho_{jk} \rightarrow 1$, the difference between $\hat{\beta_j}$ and $\hat{\beta_k}$ goes to zero.</li>
 </ul>
 
@@ -14095,12 +14095,13 @@ where $\rho_{jk} = \hat{\text{corr}}(\mathbf{x}^{(j)},\mathbf{x}^{(k)})$ is the 
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="References">References<a class="anchor-link" href="#References">&#182;</a></h2><ul>
-<li>Chen, Y. (2017). <em>ELE538B: Sparsity, Structure and Inference - Lasso: algorithms and extensions</em> [lecture slides]. Retrieved from <a href="http://www.princeton.edu/~yc5/ele538b_sparsity/lectures/lasso_algorithm_extension.pdf">this link</a>.</li>
 <li>Bishop, C. M. (2006). <em>Pattern recognition and machine learning</em>. springer.</li>
-<li>Tibshirani, R. (1996). Regression shrinkage and selection via the lasso. <em>Journal of the Royal Statistical Society: Series B (Methodological)</em>, 58(1), 267-288.</li>
-<li>Tibshirani, R. (2011). Regression shrinkage and selection via the lasso: a retrospective. <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em>, 73(3), 273-282.</li>
+<li>Breheny, P. (2016). <em>BIOS 7600: High-Dimensional Data Analysis</em> [lecture notes]. Retrieved from <a href="https://myweb.uiowa.edu/pbreheny/7600/s16/notes.html">this link</a>.</li>
+<li>Chen, Y. (2017). <em>ELE538B: Sparsity, Structure and Inference - Lasso: algorithms and extensions</em> [lecture slides]. Retrieved from <a href="http://www.princeton.edu/~yc5/ele538b_sparsity/lectures/lasso_algorithm_extension.pdf">this link</a>.</li>
+<li>Tibshirani, R. (1996). Regression shrinkage and selection via the lasso. <em>Journal of the Royal Statistical Society: Series B (Methodological), 58</em>(1), 267-288.</li>
+<li>Tibshirani, R. (2011). Regression shrinkage and selection via the lasso: a retrospective. <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology), 73</em>(3), 273-282.</li>
 <li><a href="https://scikit-learn.org/stable/modules/linear_model.html#">Scikit-learn User Guide - 1.1 Linear Models</a></li>
-<li>Zou, H., &amp; Hastie, T. (2005). Regularization and variable selection via the elastic net. <em>Journal of the royal statistical society: series B (statistical methodology)</em>, 67(2), 301-320.</li>
+<li>Zou, H., &amp; Hastie, T. (2005). Regularization and variable selection via the elastic net. <em>Journal of the royal statistical society: series B (statistical methodology), 67</em>(2), 301-320.</li>
 </ul>
 
 </div>
