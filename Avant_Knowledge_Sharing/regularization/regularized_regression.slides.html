@@ -13225,9 +13225,9 @@ a.anchor-link {
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Linear-regression-recap">Linear regression recap<a class="anchor-link" href="#Linear-regression-recap">&#182;</a></h2><p>Recall that in the context of linear regression, we have 
 $$\mathbf{y} = \mathbf{X \beta} + \mathbf{\epsilon}$$ 
-where $\mathbf{y} \in \mathbb{R}^n$ is the target variable, $\mathbf{X} \in \mathbb{R}^{n \times p}$ is the design matrix, $\mathbf{\beta} \in \mathbb{R}^d$ is the parameter vector, and the error $\epsilon_i \overset{\text{iid}}{\sim} \mathcal{N}(0,\sigma^2)$. We will use $\mathbf{x}_i (\in \mathbb{R}^p)$ to denote the $i$-th data point, $\mathbf{x}_{:j} (\in \mathbb{R}^n)$ or $\mathbf{X}_{:j}$ to denote the $j$-th variable or $j$-th column of $\mathbf{X}$.</p>
+where the target variable $\mathbf{y} \in \mathbb{R}^n$, the design matrix $\mathbf{X} \in \mathbb{R}^{n \times p}$ , the parameter vector $\mathbf{\beta} \in \mathbb{R}^p$, and the error $\epsilon_i \overset{\text{iid}}{\sim} \mathcal{N}(0,\sigma^2)$. We will use $\mathbf{x}_i (\in \mathbb{R}^p)$ to denote the $i$-th data point, $\mathbf{x}_{:j} (\in \mathbb{R}^n)$ or $\mathbf{X}_{:j}$ to denote the $j$-th variable or $j$-th column of $\mathbf{X}$.</p>
 <p>The negative log-likelihood is 
-$$L(\mathbf{\beta}|\mathbf{X, y}) = \dfrac{n}{2}\log (2\pi \sigma^2) + \dfrac{1}{2\sigma^2}\sum_{i=1}^n(y_i -\mathbf{x}_i^{T}\mathbf{\beta})^2$$
+$$L(\mathbf{y}|\mathbf{X},\mathbf{\beta}, \sigma) = \dfrac{n}{2}\log (2\pi \sigma^2) + \dfrac{1}{2\sigma^2}\sum_{i=1}^n(y_i -\mathbf{x}_i^{T}\mathbf{\beta})^2$$
 Notice that the <strong>MLE</strong> is also the least squares soltion 
 $$\hat{\mathbf{\beta}}_{\text{MLE}} = \hat{\mathbf{\beta}}_{\text{LS}} = \underset{\mathbf{\beta}}{\text{arg min}}||\mathbf{y} -\mathbf{X}\mathbf{\beta}||_2^2$$</p>
 
@@ -13283,7 +13283,7 @@ $$Loss(\mathbf{\beta}) = \dfrac{1}{2}\sum_{i=1}^n(y_i -\mathbf{x}_i^{T}\mathbf{\
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Ridge-regression">Ridge regression<a class="anchor-link" href="#Ridge-regression">&#182;</a></h2><h3 id="Solution">Solution<a class="anchor-link" href="#Solution">&#182;</a></h3><p>The loss function of ridge regression is differentiable, and it has a simple closed-form solution</p>
 $$\hat{\mathbf{\beta}}_{\text{ridge}} = (\mathbf{X}^T\mathbf{X} + \lambda \mathbf{I})^{-1}\mathbf{X}^T \mathbf{y}$$<p>The solution is similar to the least squares solution with an extra diagonal matrix (i.e., $\lambda \mathbf{I}$) to be inverted, which improves the numeric stability of the system when $\mathbf{X}^T\mathbf{X}$ is close to being non-invertible.</p>
-<p><em>Question: what does that mean in practice?</em></p>
+<p><em>Question: <a href="https://stats.stackexchange.com/questions/70899/what-correlation-makes-a-matrix-singular-and-what-are-implications-of-singularit">what does that mean in practice?</a></em></p>
 
 </div>
 </div>
@@ -13389,7 +13389,7 @@ $$\hat{\mathbf{\beta}}_{\text{ridge}} = (\mathbf{X}^T\mathbf{X} + \lambda \mathb
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Ridge-regression">Ridge regression<a class="anchor-link" href="#Ridge-regression">&#182;</a></h2><h3 id="Bayesian-interpretation">Bayesian interpretation<a class="anchor-link" href="#Bayesian-interpretation">&#182;</a></h3><ul>
-<li>(<strong>TL;DR</strong>) Regularized least squares with ridge penalty is equivalent to the maximum a posteriori (MAP) estimator (up to constant factor) in the Bayesian framework for linear regression with isotropic zero-mean Gaussian priors on the parameters. </li>
+<li>(<strong>TL;DR</strong>) Regularized least squares with ridge penalty is equivalent to the maximum a posteriori (MAP) estimator (up to a constant factor) in the Bayesian framework for linear regression with isotropic zero-mean Gaussian priors on the parameters. </li>
 </ul>
 
 </div>
@@ -13445,7 +13445,7 @@ $$
 \mathbf{S_n}^{-1} &amp;= \mathbf{S_0}^{-1} + \tau \mathbf{X}^T\mathbf{X}
 \end{align}
 $$<ul>
-<li>Assume the prior is a zero-mean isotropic Gaussian, i.e., $\mathbf{\beta} \sim \mathcal{N}(\mathbf{0}, \alpha^{-1}\mathbf{I})$. The parameterization of the posterior then becomes</li>
+<li>Assume the prior is a zero-mean isotropic Gaussian, i.e., $\mathbf{\beta} \sim \mathcal{N}(\mathbf{0}, \alpha^{-1}\mathbf{I})$. The parameterization of the posterior further reduces to the following:</li>
 </ul>
 $$
 \begin{align}
@@ -13668,9 +13668,11 @@ $$\min_{\mathbf{\beta}}||\mathbf{y}-\mathbf{X\beta}||_2^2 \quad \text{s.t.} ||\m
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Algorithms-for-LASSO">Algorithms for LASSO<a class="anchor-link" href="#Algorithms-for-LASSO">&#182;</a></h3><ul>
-<li><p>Unlike ridge regression, lasso is not strictly convex when $\mathbf{X}^T\mathbf{X}$ is not full rank, thus it may not have a unique solution.</p>
-</li>
-<li><p>Since $\ell_1$ penalty is not differentiable at $\beta_j=0$, vanilla gradient descent method doesn't work.</p>
+<li><p>Challenges of solving a LASSO model</p>
+<ul>
+<li>Unlike ridge regression, lasso is not strictly convex when $\mathbf{X}^T\mathbf{X}$ is not full rank, thus it may not have a unique solution. </li>
+<li>Since $\ell_1$ penalty is not differentiable at $\beta_j=0$, vanilla gradient descent method doesn't work.</li>
+</ul>
 </li>
 <li><p>There are two popular algorithms (as currently inplemented in <code>sklearn</code>) to solve LASSO models.</p>
 <ul>
@@ -13734,16 +13736,16 @@ where $\psi_{\text{st}}$ is the <em>soft thresholding</em> operator (more on $\p
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h4 id="Subgradients-and-optimality">Subgradients and optimality<a class="anchor-link" href="#Subgradients-and-optimality">&#182;</a></h4><ul>
-<li>For $f: \mathbb{R}^n \rightarrow \mathbb{R}$, its <strong><em>subgradient</em></strong> at $x$ is defined as 
-$$\partial f(x) = \{s\in \mathbb{R}^n| f(z)\geq f(x) + s^T(z-x), \forall z \in \mathbf{dom} f\}$$</li>
-<li>If $f$ is convex and differentiable, than its gradient at $x$ is a subgradient. If $f$ is not differentiable, it can have multiple subgradients.</li>
+<li>For convex function $f: \mathbb{R}^n \rightarrow \mathbb{R}$, its <strong><em>subgradient</em></strong> at $x$ is defined as 
+$$\partial f(x) = \{s\in \mathbb{R}^n| f(z) - f(x) \geq  s^T(z-x), \forall z \in \mathbf{dom} f\}$$</li>
+<li>If $f$ is differentiable, than its subgradient at $x$ is its gradient. If $f$ is not differentiable, it can have multiple subgradients.</li>
 <li><strong>Theorem</strong>: for any convex function $f(\mathbf{x})$, $\mathbf{x}^*$ is an optimal solution $\iff$ $\mathbf{0} \in \partial f(\mathbf{x}^*)$, where $\partial f(\mathbf{x})$ is the set of all subgradients at $\mathbf{x}$.<ul>
 <li>Use $f(\beta) = |\beta|$ as an example, it's subgradient $s = \partial f(\beta)$ is 
 $$\begin{cases}
 s = \text{sign}(\beta), &amp; \beta \neq 0 \\
 s \in [-1, 1], &amp; \beta = 0
 \end{cases}$$</li>
-<li>Notice the optimal solution $\beta^* = 0$ and $0 \in \partial f(\beta^*)$.</li>
+<li>Notice the optimal solution $\beta^* = 0$ and $0 \in \partial f(0)$.</li>
 </ul>
 </li>
 </ul>
